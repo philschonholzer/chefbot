@@ -5,6 +5,12 @@ if (!process.env.token) {
 
 var Botkit = require('botkit');
 var os = require('os');
+var moment = require('moment');
+
+if (moment().isoWeekday() > 5) {
+    console.log('It`s weekend for gods sake!');
+    process.exit();
+}
 
 var controller = Botkit.slackbot({
     debug: true,
