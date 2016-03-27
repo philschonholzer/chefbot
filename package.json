@@ -1,15 +1,16 @@
 {
-    "name": "chefbot",
-    "version": "0.0.1",
-    "description": "Your boss!",
-    "main": "bot.js",
-    "scripts": {
-        "start": "node bot.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "apptiva.ch",
-    "license": "ISC",
-    "dependencies": {
-        "botkit": "0.0.12"
-    }
+  "name": "chefbot",
+  "version": "0.0.1",
+  "description": "Your boss!",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "apptiva.ch",
+  "license": "ISC",
+  "dependencies": {
+    "botkit": "0.0.12",
+    "moment": "^2.12.0"
+  }
 }
