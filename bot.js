@@ -24,7 +24,7 @@ var bot = controller.spawn({
     }
 
     bot.say({
-        text: 'Hey! Woran habt ihr heute gearbeitet? An [1] Eris?',
+        text: 'Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nAn was anderem (keine Antwort nötig).',
         channel: "C0VPK9BGA"
     });
 
