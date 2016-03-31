@@ -28,6 +28,7 @@ var bot = controller.spawn({
         channel: "C0VPK9BGA"
     });
 
+    // Heroku stops the worker after 18h anyway    
     setTimeout(function() {
         process.exit();
     }, 1000 * 60 * 60 * 4); // 4h
