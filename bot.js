@@ -30,7 +30,7 @@ var bot = controller.spawn({
 
     setTimeout(function() {
         process.exit();
-    }, 60000);
+    }, 1000 * 60 * 60 * 4); // 4h
 
 });
 
