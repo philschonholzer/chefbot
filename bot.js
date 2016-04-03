@@ -1,19 +1,32 @@
-if (!process.env.token) {
-    console.log('Error: Specify token in environment');
+// 'C0VPK9BGA' = "rapport", 'C0XJG50EN' = "bot_test"
+
+if (!process.env.token && !process.env.channel && !process.env.REDIS_URL) {
+    console.log('Error: Specify token, channel and REDIS_URL in environment');
     process.exit(1);
 }
 
-var Botkit = require('botkit');
-var os = require('os');
 var moment = require('moment');
-
 if (moment().isoWeekday() > 5) {
     console.log('It`s weekend for gods sake!');
-    process.exit();
+    // process.exit();
 }
+
+var Botkit = require('botkit');
+var redis = require('./redis_storage');
+var url = require('url');
+var os = require('os');
+
+var redisURL = url.parse(process.env.REDIS_URL);
+var redisStorage = redis({
+    namespace: 'botkit-example',
+    host: redisURL.hostname,
+    port: redisURL.port,
+    auth_pass: redisURL.auth.split(":")[1]
+});
 
 var controller = Botkit.slackbot({
     debug: true,
+    storage: redisStorage,
 });
 
 var bot = controller.spawn({
@@ -25,7 +38,7 @@ var bot = controller.spawn({
 
     bot.say({
         text: 'Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nAn was anderem (keine Antwort nötig).',
-        channel: "C0VPK9BGA"
+        channel: process.env.channel
     });
 
     // Heroku stops the worker after 18h anyway    
@@ -36,15 +49,28 @@ var bot = controller.spawn({
 });
 
 controller.hears(['1', 'eris'], 'ambient', function(bot, message) {
-    if (message.channel == 'C0VPK9BGA') {
-        bot.api.reactions.add({
-            timestamp: message.ts,
-            channel: message.channel,
-            name: 'thumbsup',
-        }, function(err, res) {
-            if (err) {
-                bot.botkit.log('Failed to add emoji reaction :(', err);
+    if (message.channel == process.env.channel) {
+        
+        controller.storage.projects.get("eris", function (err, project) {
+            if (!project) {
+                project = {
+                    id: "eris",
+                    days: 0,
+                };
             }
+            project.days++;
+            controller.storage.projects.save(project, function (err, id) {
+                bot.api.reactions.add({
+                    timestamp: message.ts,
+                    channel: message.channel,
+                    name: 'thumbsup',
+                }, function(err, res) {
+                    if (err) {
+                        bot.botkit.log('Failed to add emoji reaction :(', err);
+                    }
+                });
+                
+            });
         });
     }
 })
