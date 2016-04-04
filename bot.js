@@ -1,6 +1,6 @@
 // 'C0VPK9BGA' = "rapport", 'C0XJG50EN' = "bot_test"
 
-if (!process.env.token && !process.env.channel && !process.env.REDIS_URL) {
+if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
     console.log('Error: Specify token, channel and REDIS_URL in environment');
     process.exit(1);
 }
@@ -8,7 +8,7 @@ if (!process.env.token && !process.env.channel && !process.env.REDIS_URL) {
 var moment = require('moment');
 if (moment().isoWeekday() > 5) {
     console.log('It`s weekend for gods sake!');
-    // process.exit();
+    process.exit();
 }
 
 var Botkit = require('botkit');
@@ -37,7 +37,7 @@ var bot = controller.spawn({
     }
 
     bot.say({
-        text: 'Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nAn was anderem (keine Antwort nötig).',
+        text: 'Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nFür was anderes ist keine Antwort nötig.',
         channel: process.env.channel
     });
 
@@ -74,6 +74,16 @@ controller.hears(['1', 'eris'], 'ambient', function(bot, message) {
         });
     }
 })
+
+controller.hears(['übersicht', 'total', 'projekt', 'tage', 'arbeit'], 'direct_message,direct_mention,mention', function (bot, message) {
+    controller.storage.projects.get('eris', function (err, project) {
+        if (project) {
+            bot.reply(message, 'Bisher wurde ' + project.days + ' Tage an Eris gearbeitet.');
+        } else {
+            bot.reply(message, 'Ich habe noch keine Projektdaten...');
+        }
+    });
+});
 
 controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', function(bot, message) {
 
