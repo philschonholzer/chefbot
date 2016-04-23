@@ -1,5 +1,12 @@
-var redis = require('redis'); //https://github.com/NodeRedis/node_redis
+import * as redis from "redis"; //https://github.com/NodeRedis/node_redis
 
+
+interface Config {
+    namespace?: string;
+    host?: string;
+    port?: string;
+    methods?: string;
+}
 /*
  * All optional
  *
@@ -12,50 +19,50 @@ var redis = require('redis'); //https://github.com/NodeRedis/node_redis
  * https://github.com/NodeRedis/node_redis
  * #options-is-an-object-with-the-following-possible-properties for a full list of the valid options
  */
-module.exports = function(config) {
+module.exports = function(config: Config) {
     config = config || {};
-    config.namespace = config.namespace || 'botkit:store';
+    config.namespace = config.namespace || "botkit:store";
 
-    var storage = {},
+    let storage = {},
     client = redis.createClient(config), // could pass specific redis config here
-    methods = config.methods || ['teams', 'users', 'channels', 'projects'];
+    methods = config.methods || ["teams", "users", "channels", "projects"];
 
     // Implements required API methods
-    for (var i = 0; i < methods.length; i++) {
+    for (let i = 0; i < methods.length; i++) {
         storage[methods[i]] = function(hash) {
             return {
                 get: function(id, cb) {
-                    client.hget(config.namespace + ':' + hash, id, function(err, res) {
+                    client.hget(config.namespace + ":" + hash, id, function(err, res) {
                         cb(err, JSON.parse(res));
                     });
                 },
                 save: function(object, cb) {
                     if (!object.id) // Silently catch this error?
-                        return cb(new Error('The given object must have an id property'), {});
-                    client.hset(config.namespace + ':' + hash, object.id, JSON.stringify(object), cb);
+                        return cb(new Error("The given object must have an id property"), {});
+                    client.hset(config.namespace + ":" + hash, object.id, JSON.stringify(object), cb);
                 },
                 all: function(cb, options) {
-                    client.hgetall(config.namespace + ':' + hash, function(err, res) {
+                    client.hgetall(config.namespace + ":" + hash, function(err, res) {
                         if (err)
                         return cb(err, {});
 
                         if (null === res)
                         return cb(err, res);
 
-                        var parsed;
-                        var array = [];
+                        let parsed;
+                        let array = [];
 
-                        for (var i in res) {
+                        for (let i in res) {
                             parsed = JSON.parse(res[i]);
                             res[i] = parsed;
                             array.push(parsed);
                         }
 
-                        cb(err, options && options.type === 'object' ? res : array);
+                        cb(err, options && options.type === "object" ? res : array);
                     });
                 },
                 allById: function(cb) {
-                    this.all(cb, {type: 'object'});
+                    this.all(cb, {type: "object"});
                 }
             };
         }(methods[i]);

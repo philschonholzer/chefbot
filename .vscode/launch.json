@@ -5,21 +5,24 @@
 			"name": "Launch",
 			"type": "node",
 			"request": "launch",
-			"program": "${workspaceRoot}\\bot.js",
+			"program": "${workspaceRoot}\\src\\bot.ts",
 			"stopOnEntry": false,
 			"args": [],
 			"cwd": "${workspaceRoot}",
-			"preLaunchTask": null,
+			"preLaunchTask": "tsc",
 			"runtimeExecutable": null,
 			"runtimeArgs": [
 				"--nolazy"
 			],
 			"env": {
+                "token": "xoxb-29780057110-KTQwWLtuKtSTzN66gyPjitfm",
+                "REDIS_URL": "redis://h:p7nc9gq7rlvoa55iocefmscg3qj@ec2-54-227-251-129.compute-1.amazonaws.com:12439",
+                "channel": "C0XJG50EN",
 				"NODE_ENV": "development"
 			},
 			"externalConsole": false,
-			"sourceMaps": false,
-			"outDir": null
+			"sourceMaps": true,
+			"outDir": "${workspaceRoot}\\app"
 		},
 		{
 			"name": "Attach",
