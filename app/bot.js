@@ -3,15 +3,16 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
     console.log("Error: Specify token, channel and REDIS_URL in environment");
     process.exit(1);
 }
-const moment = require("moment");
-if (moment().isoWeekday() > 5) {
-    console.log("It`s weekend for gods sake!");
-    process.exit();
-}
+// import * as moment from "moment";
+// if (moment().isoWeekday() > 5) {
+//     console.log("It`s weekend for gods sake!");
+//     process.exit();
+// }
 const Botkit = require("botkit");
 let redis = require("./redis_storage");
 const url = require("url");
 const os = require("os");
+const schedule = require("node-schedule");
 let redisURL = url.parse(process.env.REDIS_URL);
 let redisStorage = redis({
     namespace: "botkit-example",
@@ -29,14 +30,52 @@ let bot = controller.spawn({
     if (err) {
         throw new Error(err);
     }
+    getUsers(bot);
     // bot.say({
     //     text: "Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nFür was anderes ist keine Antwort nötig.",
     //     channel: process.env.channel
     // });
     // Heroku stops the worker after 18h anyway    
-    setTimeout(function () {
-        process.exit();
-    }, 1000 * 60 * 60 * 4); // 4h
+    // setTimeout(function() {
+    //     process.exit();
+    // }, 1000 * 60 * 60 * 4); // 4h
+    schedule.scheduleJob("0 0 14 * * 1-5", () => {
+        getUsers(bot);
+    });
+});
+function getUsers(bot) {
+    bot.api.channels.list({ exclude_archived: 1 }, (err, res) => {
+        let users = {};
+        for (let channel of res.channels) {
+            if (channel.is_member) {
+                bot.botkit.log(`Members of ${channel.name} are ${channel.members}`, err);
+                for (let user of channel.members) {
+                    if (!users[user]) {
+                        users[user] = [];
+                    }
+                    users[user].push(channel);
+                }
+            }
+        }
+        bot.botkit.log(`Users ${users}`, err);
+        let channels = "";
+        for (let channel of users["U02615Q0J"]) {
+            channels = channels + channel.name;
+        }
+        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
+            bot.say({
+                text: `An was arbeitest du? \n ${channels}`,
+                channel: res.channel.id
+            });
+        });
+    });
+}
+;
+controller.on("channel_joined", (bot, message) => {
+    bot.say({
+        text: "Cool! Ich werde von nun an fragen, ob du am Projekt " + message.channel.name + " arbeitest.",
+        channel: message.channel.id
+    });
 });
 controller.hears(["1", "eris"], "ambient", function (bot, message) {
     if (message.channel === process.env.channel) {
