@@ -1,0 +1,10 @@
+{
+  "ambientDependencies": {
+    "moment": "registry:dt/moment#2.8.0+20160316155526",
+    "node": "registry:dt/node#4.0.0+20160412142033",
+    "redis": "registry:dt/redis#0.12.1+20160316155526"
+  },
+  "dependencies": {
+    "moment": "registry:npm/moment#2.10.5+20160211003958"
+  }
+}

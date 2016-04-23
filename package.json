@@ -4,7 +4,8 @@
   "description": "Your boss!",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
+    "build": "tsc -p .",
+    "start": "node app/bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "apptiva.ch",

@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "sourceMap": true,
+        "jsx": "react",
+        "outDir": "./app"
+    },
+    "exclude": [
+        "app",
+        "node_modules", 
+        "typings/browser",
+        "typings/browser.d.ts"
+    ]
+}
