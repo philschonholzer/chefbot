@@ -3,17 +3,18 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
     process.exit(1);
 }
 
-import * as moment from "moment";
-if (moment().isoWeekday() > 5) {
-    console.log("It`s weekend for gods sake!");
-    process.exit();
-}
+// import * as moment from "moment";
+// if (moment().isoWeekday() > 5) {
+//     console.log("It`s weekend for gods sake!");
+//     process.exit();
+// }
 
 import * as Botkit from "botkit";
 
 let redis = require("./redis_storage");
 import * as url from "url";
 import * as os from "os";
+import * as schedule from "node-schedule";
 
 let redisURL = url.parse(process.env.REDIS_URL);
 let redisStorage = redis({
@@ -30,10 +31,12 @@ let controller = Botkit.slackbot({
 
 let bot = controller.spawn({
     token: process.env.token
-}).startRTM(function(err, bot) {
+}).startRTM(function (err, bot) {
     if (err) {
         throw new Error(err);
     }
+
+    getUsers(bot);
 
     // bot.say({
     //     text: "Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nFür was anderes ist keine Antwort nötig.",
@@ -41,14 +44,59 @@ let bot = controller.spawn({
     // });
 
     // Heroku stops the worker after 18h anyway    
-    setTimeout(function() {
-        process.exit();
-    }, 1000 * 60 * 60 * 4); // 4h
+    // setTimeout(function() {
+    //     process.exit();
+    // }, 1000 * 60 * 60 * 4); // 4h
+    schedule.scheduleJob("0 0 14 * * 1-5", () => {
+        getUsers(bot);
+    });
 
 });
 
+interface User {
+    [id: string]: Channel[];
+}
 
-controller.hears(["1", "eris"], "ambient", function(bot, message) {
+function getUsers(bot: Bot) {
+    bot.api.channels.list({exclude_archived: 1}, (err, res) => {
+        let users: User = {};
+        for (let channel of <Channel[]>res.channels) {
+            if (channel.is_member){
+                bot.botkit.log(`Members of ${channel.name} are ${channel.members}`, err);
+                for (let user of channel.members){
+                    if (!users[user]) {
+                        users[user] = [];
+                    }
+                    users[user].push(channel);
+                }
+            }
+        }
+        bot.botkit.log(`Users ${users}`, err);
+
+        let channels = "";
+        for (let channel of users["U02615Q0J"]){
+            channels = channels + channel.name;
+        }
+
+        bot.api.im.open({user: "U02615Q0J"}, (err, res) => {
+            bot.say({
+                text: `An was arbeitest du? \n ${channels}`,
+                channel: res.channel.id
+            });
+        });
+
+    });
+};
+
+controller.on("channel_joined", (bot, message) => {
+    bot.say({
+        text: "Cool! Ich werde von nun an fragen, ob du am Projekt " + message.channel.name + " arbeitest.",
+        channel: message.channel.id
+    });
+});
+
+
+controller.hears(["1", "eris"], "ambient", function (bot, message) {
     if (message.channel === process.env.channel) {
 
         controller.storage.projects.get("eris", function (err, project) {
@@ -64,7 +112,7 @@ controller.hears(["1", "eris"], "ambient", function(bot, message) {
                     timestamp: message.ts,
                     channel: message.channel,
                     name: "thumbsup",
-                }, function(err, res) {
+                }, function (err, res) {
                     if (err) {
                         bot.botkit.log("Failed to add emoji reaction :(", err);
                     }
@@ -84,20 +132,20 @@ controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_m
     });
 });
 
-controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", function(bot, message) {
+controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", function (bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
         name: "robot_face",
-    }, function(err, res) {
+    }, function (err, res) {
         if (err) {
             bot.botkit.log("Failed to add emoji reaction :(", err);
         }
     });
 
 
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.users.get(message.user, function (err, user) {
         if (user && user.name) {
             bot.reply(message, "Hello " + user.name + "!!");
         } else {
@@ -106,25 +154,25 @@ controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", funct
     });
 });
 
-controller.hears(["call me (.*)"], "direct_message,direct_mention,mention", function(bot, message) {
+controller.hears(["call me (.*)"], "direct_message,direct_mention,mention", function (bot, message) {
     let matches = message.text.match(/call me (.*)/i);
     let name = matches[1];
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.users.get(message.user, function (err, user) {
         if (!user) {
             user = {
                 id: message.user,
             };
         }
         user.name = name;
-        controller.storage.users.save(user, function(err, id) {
+        controller.storage.users.save(user, function (err, id) {
             bot.reply(message, "Got it. I will call you " + user.name + " from now on.");
         });
     });
 });
 
-controller.hears(["what is my name", "who am i"], "direct_message,direct_mention,mention", function(bot, message) {
+controller.hears(["what is my name", "who am i"], "direct_message,direct_mention,mention", function (bot, message) {
 
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.users.get(message.user, function (err, user) {
         if (user && user.name) {
             bot.reply(message, "Your name is " + user.name);
         } else {
@@ -134,17 +182,17 @@ controller.hears(["what is my name", "who am i"], "direct_message,direct_mention
 });
 
 
-controller.hears(["shutdown"], "direct_message,direct_mention,mention", function(bot, message) {
+controller.hears(["shutdown"], "direct_message,direct_mention,mention", function (bot, message) {
 
-    bot.startConversation(message, function(err, convo) {
+    bot.startConversation(message, function (err, convo) {
 
         convo.ask("Are you sure you want me to shutdown?", [
             {
                 pattern: bot.utterances.yes,
-                callback: function(response, convo) {
+                callback: function (response, convo) {
                     convo.say("Bye!");
                     convo.next();
-                    setTimeout(function() {
+                    setTimeout(function () {
                         process.exit();
                     }, 3000);
                 }
@@ -152,7 +200,7 @@ controller.hears(["shutdown"], "direct_message,direct_mention,mention", function
             {
                 pattern: bot.utterances.no,
                 default: true,
-                callback: function(response, convo) {
+                callback: function (response, convo) {
                     convo.say("*Phew!*");
                     convo.next();
                 }
@@ -162,7 +210,7 @@ controller.hears(["shutdown"], "direct_message,direct_mention,mention", function
 });
 
 
-controller.hears(["uptime", "identify yourself", "who are you", "what is your name"], "direct_message,direct_mention,mention", function(bot, message) {
+controller.hears(["uptime", "identify yourself", "who are you", "what is your name"], "direct_message,direct_mention,mention", function (bot, message) {
 
     let hostname = os.hostname();
     let uptime = formatUptime(process.uptime());
