@@ -11,13 +11,13 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
 
 import * as Botkit from "botkit";
 
-let redis = require("./redis_storage");
+import Redis from "./redis_storage";
 import * as url from "url";
 import * as os from "os";
 import * as schedule from "node-schedule";
 
 let redisURL = url.parse(process.env.REDIS_URL);
-let redisStorage = redis({
+let redisStorage = new Redis({
     namespace: "botkit-example",
     host: redisURL.hostname,
     port: redisURL.port,
@@ -99,7 +99,7 @@ controller.on("channel_joined", (bot, message) => {
 controller.hears(["1", "eris"], "ambient", function (bot, message) {
     if (message.channel === process.env.channel) {
 
-        controller.storage.projects.get("eris", function (err, project) {
+        controller.storage.projects.get("eris", (err, project) => {
             if (!project) {
                 project = {
                     id: "eris",
@@ -130,6 +130,7 @@ controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_m
             bot.reply(message, "Ich habe noch keine Projektdaten...");
         }
     });
+
 });
 
 controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", function (bot, message) {
