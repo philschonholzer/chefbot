@@ -57,11 +57,25 @@ interface Message {
     text: string;
 }
 
+interface Store {
+    get: (id: string, cb: (err: any, obj: any) => void) => void;
+    save: (object: any, cb: (err: Error, id: string) => void) => void;
+    all: (callback: (err: Error, object: any) => void, options: any) => void;
+    allById: (callback: () => void) => void; 
+}
+
+interface RedisStorage {
+    users: Store;
+    teams: Store;
+    channels: Store;
+    projects: Store;
+}
+
 interface Controller {
     on(channel: string, callback: (bot: Bot, message: Message) => void): void;
     spawn(options?: ControllerOptions): Bot;
     hears(words: string[], whereMentioned: string, callback: (bot: Bot, message: Message) => void): void;
-    storage: any;
+    storage: RedisStorage;
 }
 
 interface Botkit {

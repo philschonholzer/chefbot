@@ -95,7 +95,6 @@ controller.on("channel_joined", (bot, message) => {
     });
 });
 
-
 controller.hears(["1", "eris"], "ambient", function (bot, message) {
     if (message.channel === process.env.channel) {
 
