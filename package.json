@@ -12,10 +12,11 @@
   "author": "apptiva.ch",
   "license": "ISC",
   "dependencies": {
+    "typescript": "~1.8.10",
     "botkit": "0.0.12",
-    "moment": "^2.12.0",
-    "node-schedule": "^1.1.0",
-    "redis": "^2.6.0-1",
-    "typings": "^0.8.1"
+    "moment": "~2.12.0",
+    "node-schedule": "~1.1.0",
+    "redis": "~2.6.0-2",
+    "typings": "~0.8.1"
   }
 }
