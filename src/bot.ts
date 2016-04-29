@@ -3,11 +3,11 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
     process.exit(1);
 }
 
-// import * as moment from "moment";
-// if (moment().isoWeekday() > 5) {
-//     console.log("It`s weekend for gods sake!");
-//     process.exit();
-// }
+import * as moment from "moment";
+if (moment().isoWeekday() > 5) {
+    console.log("It`s weekend for gods sake!");
+    process.exit();
+}
 
 import * as Botkit from "botkit";
 
