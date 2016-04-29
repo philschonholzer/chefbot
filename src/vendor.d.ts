@@ -3,16 +3,9 @@ declare module "botkit" {
     export = botkit;
 }
 
-interface RedisStorage {
-    namespace?: string;
-    host?: string;
-    port?: string;
-    auth_pass?: string;
-}
-
 interface BotOptions {
     debug?: boolean;
-    storage?: RedisStorage;
+    storage?: any;
 }
 
 interface ControllerOptions {

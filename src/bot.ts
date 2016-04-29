@@ -61,7 +61,7 @@ function getUsers(bot: Bot) {
     bot.api.channels.list({exclude_archived: 1}, (err, res) => {
         let users: User = {};
         for (let channel of <Channel[]>res.channels) {
-            if (channel.is_member){
+            if (channel.is_member) {
                 bot.botkit.log(`Members of ${channel.name} are ${channel.members}`, err);
                 for (let user of channel.members){
                     if (!users[user]) {
@@ -237,4 +237,3 @@ function formatUptime(uptime) {
     uptime = uptime + " " + unit;
     return uptime;
 }
-

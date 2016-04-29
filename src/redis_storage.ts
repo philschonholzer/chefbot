@@ -1,4 +1,4 @@
-import * as redis from "redis"; //https://github.com/NodeRedis/node_redis
+import * as redis from "redis"; // https://github.com/NodeRedis/node_redis
 
 
 interface Config {
@@ -18,50 +18,44 @@ class Store {
         this.hash = hash;
         this.client = client;
     }
-    
+
     public get = (id: string, cb: (err: any, obj: any) => void) => {
-                    this.client.hget(this.config.namespace + ":" + this.hash, id, (err, res) => cb(err, JSON.parse(res)) );
-                };
-    
+        this.client.hget(this.config.namespace + ":" + this.hash, id, (err, res) => cb(err, JSON.parse(res)));
+    };
+
     public save = (object, cb) => {
-                    if (!object.id) // Silently catch this error?
-                        return cb(new Error("The given object must have an id property"), {});
-                    this.client.hset(this.config.namespace + ":" + this.hash, object.id, JSON.stringify(object), cb);
-                };
+        if (!object.id) // Silently catch this error?
+            return cb(new Error("The given object must have an id property"), {});
+        this.client.hset(this.config.namespace + ":" + this.hash, object.id, JSON.stringify(object), cb);
+    };
     public all = (cb, options) => {
-                    this.client.hgetall(this.config.namespace + ":" + this.hash, function(err, res) {
-                        if (err)
-                        return cb(err, {});
+        this.client.hgetall(this.config.namespace + ":" + this.hash, function (err, res) {
+            if (err)
+                return cb(err, {});
 
-                        if (null === res)
-                        return cb(err, res);
+            if (null === res)
+                return cb(err, res);
 
-                        let parsed;
-                        let array = [];
+            let parsed;
+            let array = [];
 
-                        for (let i in res) {
-                            parsed = JSON.parse(res[i]);
-                            res[i] = parsed;
-                            array.push(parsed);
-                        }
+            for (let i in res) {
+                parsed = JSON.parse(res[i]);
+                res[i] = parsed;
+                array.push(parsed);
+            }
 
-                        cb(err, options && options.type === "object" ? res : array);
-                    });
-                };
-     public allById = (cb) => this.all(cb, {type: "object"});
-    
+            cb(err, options && options.type === "object" ? res : array);
+        });
+    };
+    public allById = (cb) => this.all(cb, { type: "object" });
+
 }
 
 /**
  * Storage
  */
 export default class Storage {
-
-    // this.client is set to late...?
-    public teams = new Store("teams", this.client, this.config);
-    public users = new Store("users", this.client, this.config);
-    public channels = new Store("channels", this.client, this.config);
-    public projects = new Store("projects", this.client, this.config);
 
     private client: redis.RedisClient;
 
@@ -71,6 +65,23 @@ export default class Storage {
 
         this.client = redis.createClient(config); // could pass specific redis config here
     }
+
+    public get teams(): Store {
+        return new Store("teams", this.client, this.config);
+    }
+
+    public get users(): Store {
+        return new Store("users", this.client, this.config);
+    }
+
+    public get channels(): Store {
+        return new Store("channels", this.client, this.config);
+    }
+
+    public get projects(): Store {
+        return new Store("projects", this.client, this.config);
+    }
+
 
 }
 

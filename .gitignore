@@ -30,5 +30,8 @@ node_modules
 # Typings
 typings
 
+# Compiled App
+app
+
 # Launch
 .vscode/launch.json
