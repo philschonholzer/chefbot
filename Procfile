@@ -1,1 +1,1 @@
-worker: node app/bot.js
+worker: ./node_modules/.bin/typings install && ./node_modules/.bin/tsc -p . && node app/bot.js
