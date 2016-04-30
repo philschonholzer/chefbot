@@ -13,7 +13,10 @@ interface ControllerOptions {
 }
 
 interface Conversation {
-    ask(question: string, answer: any[]): void;
+    ask(question: string, callback: (response: any, convo: Conversation) => void): void;
+    ask(question: string, answers: any[]): void;
+    say(text: string);
+    next();
 }
 
 interface API {
@@ -26,6 +29,7 @@ interface API {
     }
     im: {
         open(args: {user: string}, callback: (err: any, res: any) => void): void;
+        history(args: {channel: string, count: number}, callback: (err: Error, res: any) => void): void;
     }
 }
 
@@ -34,7 +38,7 @@ interface Bot {
     botkit: {log(message: string, error: any): void};
     say(args: {text: string; channel: string}): void;
     reply(message: Message, text: string): void;
-    startConversation(message: Message, callback: (err: any, convo: Conversation) => void): void;
+    startConversation(message: Message, callback: (err: Error, convo: Conversation) => void): void;
     utterances: {
         yes: any;
         no: any;
@@ -72,7 +76,7 @@ interface RedisStorage {
 }
 
 interface Controller {
-    on(channel: string, callback: (bot: Bot, message: Message) => void): void;
+    on(channel: "channel_joined" | "direct_message", callback: (bot: Bot, message: Message) => void): void;
     spawn(options?: ControllerOptions): Bot;
     hears(words: string[], whereMentioned: string, callback: (bot: Bot, message: Message) => void): void;
     storage: RedisStorage;

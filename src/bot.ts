@@ -78,13 +78,19 @@ function getUsers(bot: Bot) {
 
         bot.api.im.open({user: "U02615Q0J"}, (err, res) => {
             bot.say({
-                text: `An was arbeitest du? \n ${channels}`,
+                text: `An was hast du heute gearbeitet? \n ${channels}`,
                 channel: res.channel.id
             });
         });
-
     });
 };
+
+controller.on("direct_message", (bot, message) => {
+    bot.startConversation(message, (err, convo) => {
+        convo.say("Sehr schön!");
+        convo.next();
+    });
+} );
 
 controller.on("channel_joined", (bot, message) => {
     bot.say({
