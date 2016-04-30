@@ -3,11 +3,11 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
     process.exit(1);
 }
 
-import * as moment from "moment";
-if (moment().isoWeekday() > 5) {
-    console.log("It`s weekend for gods sake!");
-    process.exit();
-}
+// import * as moment from "moment";
+// if (moment().isoWeekday() > 5) {
+//     console.log("It`s weekend for gods sake!");
+//     process.exit();
+// }
 
 import * as Botkit from "botkit";
 
@@ -63,20 +63,18 @@ function getUsers(bot: Bot) {
         for (let channel of <Channel[]>res.channels) {
             if (channel.is_member) {
                 bot.botkit.log(`Members of ${channel.name} are ${channel.members}`, err);
-                for (let user of channel.members){
-                    if (!users[user]) {
-                        users[user] = [];
+                channel.members.forEach((value, index, array) => {
+                    if (!users[value]) {
+                        users[value] = [];
                     }
-                    users[user].push(channel);
-                }
+                    users[value].push(channel);
+                });
             }
         }
         bot.botkit.log(`Users ${users}`, err);
 
         let channels = "";
-        for (let channel of users["U02615Q0J"]){
-            channels = channels + channel.name;
-        }
+        users["U02615Q0J"].forEach((value, index, array) => channels = channels.concat(value.name, ", "));
 
         bot.api.im.open({user: "U02615Q0J"}, (err, res) => {
             bot.say({
