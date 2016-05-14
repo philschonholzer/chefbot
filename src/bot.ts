@@ -3,11 +3,11 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
     process.exit(1);
 }
 
-// import * as moment from "moment";
-// if (moment().isoWeekday() > 5) {
-//     console.log("It`s weekend for gods sake!");
-//     process.exit();
-// }
+import * as moment from "moment";
+if (moment().isoWeekday() > 5) {
+    console.log("It`s weekend for gods sake!");
+    process.exit();
+}
 
 import * as Botkit from "botkit";
 
@@ -43,40 +43,84 @@ let bot = controller.spawn({
     //     channel: process.env.channel
     // });
 
-    // Heroku stops the worker after 18h anyway    
-    // setTimeout(function() {
-    //     process.exit();
-    // }, 1000 * 60 * 60 * 4); // 4h
     schedule.scheduleJob("0 0 14 * * 1-5", () => {
-        getUsers(bot);
+        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
+            bot.say({
+                text: `Guten Morgen!`,
+                channel: res.channel.id
+            });
+        });
     });
 
+    schedule.scheduleJob("0 0 21 * * 1-5", () => {
+        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
+            bot.say({
+                text: `Gut Nacht!`,
+                channel: res.channel.id
+            });
+        });
+        setTimeout(function () {
+            process.exit();
+        }, 3000);
+    });
 });
 
-interface User {
-    [id: string]: Channel[];
+/**
+ * Task
+ */
+class Task {
+    private _id: string;
+    constructor(private user: string, private project: string, private text: string) {
+        this._id = moment().toISOString();
+    }
+
+    get id(): string {
+        return this._id;
+    }
+
+}
+
+class User {
+    private _channels: Channel[] = [];
+
+    constructor(private id: string) { }
+
+    addChannel(channel: Channel) {
+        this._channels.push(channel);
+    }
+
+    get channels(): Channel[] {
+        return this._channels;
+    }
+
+    get identification(): string {
+        return this.id;
+    }
 }
 
 function getUsers(bot: Bot) {
-    bot.api.channels.list({exclude_archived: 1}, (err, res) => {
-        let users: User = {};
+    bot.api.channels.list({ exclude_archived: 1 }, (err, res) => {
+        let users: User[] = [];
         for (let channel of <Channel[]>res.channels) {
             if (channel.is_member) {
                 bot.botkit.log(`Members of ${channel.name} are ${channel.members}`, err);
-                channel.members.forEach((value, index, array) => {
-                    if (!users[value]) {
-                        users[value] = [];
+                channel.members.forEach((member, index, array) => {
+                    let currentUser = users.find((user, index, obj) => user.identification === member);
+                    if (!currentUser) {
+                        currentUser = new User(member);
+                        users.push(currentUser);
                     }
-                    users[value].push(channel);
+                    currentUser.addChannel(channel);
                 });
             }
         }
         bot.botkit.log(`Users ${users}`, err);
 
-        let channels = "";
-        users["U02615Q0J"].forEach((value, index, array) => channels = channels.concat(value.name, ", "));
+        let philip = users.find((user, index, obj) => user.identification === "U02615Q0J");
 
-        bot.api.im.open({user: "U02615Q0J"}, (err, res) => {
+        let channels = philip.channels.map<string>((channel, index, array) => `#${channel.name}`).join(", ");
+
+        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
             bot.say({
                 text: `An was hast du heute gearbeitet? \n ${channels}`,
                 channel: res.channel.id
@@ -85,12 +129,26 @@ function getUsers(bot: Bot) {
     });
 };
 
-controller.on("direct_message", (bot, message) => {
+controller.hears(["#"], "direct_message", (bot, message) => {
     bot.startConversation(message, (err, convo) => {
-        convo.say("Sehr schön!");
+        let projects = [], re = /<#([^\\.\s]+)>/g, project;
+        while (project = re.exec(message.text)) {
+            projects.push(project[0]);
+            controller.storage.tasks.save(new Task(message.user, project[1], message.text), (err, id) => { });
+        }
+        convo.say(`Toll! Halben Tag an ${projects.join(" und ")} gearbeitet. :thumbsup:`);
         convo.next();
     });
-} );
+});
+
+// controller.on("direct_message", (bot, message) => {
+//     if (message.text.includes("#")) {
+//         bot.startConversation(message, (err, convo) => {
+//             convo.say("Sehr schön!");
+//             convo.next();
+//         });
+//     }
+// });
 
 controller.on("channel_joined", (bot, message) => {
     bot.say({
@@ -126,6 +184,11 @@ controller.hears(["1", "eris"], "ambient", function (bot, message) {
 });
 
 controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_message,direct_mention,mention", function (bot, message) {
+    controller.storage.tasks.all((err, tasks: Task[]) => {
+        if (tasks) {
+            bot.reply(message, `Bisher wurde ${tasks.length / 2} Tage gearbeitet.`);
+        }
+    }, {});
     controller.storage.projects.get("eris", function (err, project) {
         if (project) {
             bot.reply(message, "Bisher wurde " + project.days + " Tage an Eris gearbeitet.");

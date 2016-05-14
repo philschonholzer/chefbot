@@ -26,6 +26,7 @@ interface API {
     };
     channels: {
         list(args: {}, callback: (err: any, res: any) => void): void;
+        info(args: {}, callback: (err: any, res: any) => void): void;
     }
     im: {
         open(args: {user: string}, callback: (err: any, res: any) => void): void;
@@ -79,7 +80,6 @@ interface Controller {
     on(channel: "channel_joined" | "direct_message", callback: (bot: Bot, message: Message) => void): void;
     spawn(options?: ControllerOptions): Bot;
     hears(words: string[], whereMentioned: string, callback: (bot: Bot, message: Message) => void): void;
-    storage: RedisStorage;
 }
 
 interface Botkit {

@@ -16,8 +16,7 @@ interface Config {
 class Store {
 
     constructor(private hash: string, private client: redis.RedisClient, private config: Config) {
-        this.hash = hash;
-        this.client = client;
+
     }
 
     public get = (id: string, cb: (err: any, obj: any) => void) => {
@@ -83,5 +82,15 @@ export default class Storage {
         return new Store("projects", this.client, this.config);
     }
 
+    public get tasks(): Store {
+        return new Store("tasks", this.client, this.config);
+    }
 
+
+}
+
+declare global {
+    interface Controller {
+        storage: Storage;
+    }
 }
