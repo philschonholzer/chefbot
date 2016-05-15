@@ -1,4 +1,10 @@
+import {Task} from "./bot";
 import * as redis from "redis"; // https://github.com/NodeRedis/node_redis
+// switch to 'ioredis' because of bluebird https://github.com/luin/ioredis#basic-usage
+
+import * as Promise from "bluebird";
+
+
 
 // https://github.com/NodeRedis/node_redis
 // #options-is-an-object-with-the-following-possible-properties for a full list of the valid options
@@ -28,6 +34,15 @@ class Store {
             return cb(new Error("The given object must have an id property"), {});
         this.client.hset(this.config.namespace + ":" + this.hash, object.id, JSON.stringify(object), cb);
     };
+
+    add = (key: string, value: string): PromiseLike<boolean> => {
+        return this.client.saddAsync(this.config.namespace + ":" + this.hash + ":" + key, value).then((res) => { return res; });
+    };
+
+    members = (key: string): PromiseLike<string[]> => {
+        return this.client.smembersAsync(this.config.namespace + ":" + this.hash + ":" + key).then((res) => { return res; });
+    };
+
     public all = (cb, options) => {
         this.client.hgetall(this.config.namespace + ":" + this.hash, function (err, res) {
             if (err)
@@ -64,6 +79,7 @@ export default class Storage {
         this.config.namespace = this.config.namespace || "botkit:store";
 
         this.client = redis.createClient(config); // could pass specific redis config here
+        Promise.promisifyAll(this.client);
     }
 
     public get teams(): Store {

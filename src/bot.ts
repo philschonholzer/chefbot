@@ -4,7 +4,7 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
 }
 
 import * as moment from "moment";
-if (moment().isoWeekday() > 5) {
+if (moment().isoWeekday() > 5 && !process.env.NODE_ENV) {
     console.log("It`s weekend for gods sake!");
     process.exit();
 }
@@ -15,6 +15,7 @@ import Redis from "./redis_storage";
 import * as url from "url";
 import * as os from "os";
 import * as schedule from "node-schedule";
+import * as Promise from "bluebird";
 
 let redisURL = url.parse(process.env.REDIS_URL);
 let redisStorage = new Redis({
@@ -36,20 +37,19 @@ let bot = controller.spawn({
         throw new Error(err);
     }
 
-    getUsers(bot);
-
-    // bot.say({
-    //     text: "Hey! Woran habt ihr heute gearbeitet? \nEris [1]. \nFür was anderes ist keine Antwort nötig.",
-    //     channel: process.env.channel
-    // });
-
-    schedule.scheduleJob("0 0 14 * * 1-5", () => {
+    if (process.env.NODE_ENV) {
+        askForTasks();
+    } else {
         bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
             bot.say({
                 text: `Guten Morgen!`,
                 channel: res.channel.id
             });
         });
+    }
+
+    schedule.scheduleJob("0 0 14 * * 1-5", () => {
+        askForTasks();
     });
 
     schedule.scheduleJob("0 0 21 * * 1-5", () => {
@@ -65,10 +65,12 @@ let bot = controller.spawn({
     });
 });
 
+Promise.promisifyAll(bot.api.channels);
+
 /**
  * Task
  */
-class Task {
+export class Task {
     private _id: string;
     constructor(private user: string, private project: string, private text: string) {
         this._id = moment().toISOString();
@@ -98,13 +100,31 @@ class User {
     }
 }
 
-function getUsers(bot: Bot) {
-    bot.api.channels.list({ exclude_archived: 1 }, (err, res) => {
-        let users: User[] = [];
-        for (let channel of <Channel[]>res.channels) {
-            if (channel.is_member) {
-                bot.botkit.log(`Members of ${channel.name} are ${channel.members}`, err);
-                channel.members.forEach((member, index, array) => {
+function askForTasks() {
+    let philip = getUsers().then((users) => users.find((user, index, obj) => user.identification === "U02615Q0J"));
+
+    let channels = philip.then((user) => user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", "));
+
+    bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
+        channels.then((channels) => {
+            bot.say({
+                text: `An was hast du heute gearbeitet? \n ${channels}`,
+                channel: res.channel.id
+            });
+        });
+    });
+}
+
+function getChannels() {
+    return bot.api.channels.listAsync({ exclude_archived: 1 }).then((res) => { return res.channels; });
+}
+
+function getUsers() {
+    return getChannels().then((channels) => {
+        return channels
+            .filter((channel) => channel.is_member)
+            .reduce<User[]>((users, channel, index, array) => {
+                channel.members.forEach((member) => {
                     let currentUser = users.find((user, index, obj) => user.identification === member);
                     if (!currentUser) {
                         currentUser = new User(member);
@@ -112,20 +132,8 @@ function getUsers(bot: Bot) {
                     }
                     currentUser.addChannel(channel);
                 });
-            }
-        }
-        bot.botkit.log(`Users ${users}`, err);
-
-        let philip = users.find((user, index, obj) => user.identification === "U02615Q0J");
-
-        let channels = philip.channels.map<string>((channel, index, array) => `#${channel.name}`).join(", ");
-
-        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
-            bot.say({
-                text: `An was hast du heute gearbeitet? \n ${channels}`,
-                channel: res.channel.id
-            });
-        });
+                return users;
+            }, []);
     });
 };
 
@@ -134,7 +142,9 @@ controller.hears(["#"], "direct_message", (bot, message) => {
         let projects = [], re = /<#([^\\.\s]+)>/g, project;
         while (project = re.exec(message.text)) {
             projects.push(project[0]);
-            controller.storage.tasks.save(new Task(message.user, project[1], message.text), (err, id) => { });
+            let task = new Task(message.user, project[1], message.text);
+            controller.storage.tasks.save(task, (err, id) => { });
+            controller.storage.tasks.add(project[1], task.id);
         }
         convo.say(`Toll! Halben Tag an ${projects.join(" und ")} gearbeitet. :thumbsup:`);
         convo.next();
@@ -184,6 +194,11 @@ controller.hears(["1", "eris"], "ambient", function (bot, message) {
 });
 
 controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_message,direct_mention,mention", function (bot, message) {
+    getChannels().then((channels) => channels.filter((channel) => channel.is_member).forEach((channel) => {
+        controller.storage.tasks.members(channel.id).then((value) => {
+            bot.reply(message, `Bisher wurde ${value.length / 2} Tage an <#${channel.id}> gearbeitet.`);
+        });
+    }));
     controller.storage.tasks.all((err, tasks: Task[]) => {
         if (tasks) {
             bot.reply(message, `Bisher wurde ${tasks.length / 2} Tage gearbeitet.`);

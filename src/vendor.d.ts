@@ -19,13 +19,19 @@ interface Conversation {
     next();
 }
 
+interface ChannelResponse {
+    ok: boolean;
+    channels: Channel[];
+}
+
 interface API {
     reactions: {
         add(args: { timestamp: string; channel: Channel; name: string; },
             error: (err: any, res: any) => void): void;
     };
     channels: {
-        list(args: {}, callback: (err: any, res: any) => void): void;
+        list(args: {}, callback: (err: any, res: ChannelResponse) => void): void;
+        listAsync(args: {}): Promise<ChannelResponse>;
         info(args: {}, callback: (err: any, res: any) => void): void;
     }
     im: {
@@ -84,4 +90,17 @@ interface Controller {
 
 interface Botkit {
     slackbot(options?: BotOptions): Controller;
+}
+
+declare module "redis" {
+
+    export interface RedisClient extends NodeJS.EventEmitter {
+        setAsync(key:string, value:string): Promise<void>;
+        getAsync(key:string): Promise<string>;
+        saddAsync(args:any[]): Promise<boolean>;
+        saddAsync(...args:any[]): Promise<boolean>;
+        smembersAsync(args:any[]): Promise<string[]>;
+        smembersAsync(...args:any[]): Promise<string[]>;
+    }
+
 }

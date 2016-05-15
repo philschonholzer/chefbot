@@ -5,6 +5,7 @@
     "redis": "registry:dt/redis#0.12.1+20160316155526"
   },
   "dependencies": {
+    "bluebird": "registry:npm/bluebird#3.3.4+20160515010139",
     "moment": "registry:npm/moment#2.10.5+20160211003958"
   }
 }
