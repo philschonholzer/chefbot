@@ -4,7 +4,7 @@ if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
 }
 
 import * as moment from "moment";
-if (moment().isoWeekday() > 5 && !process.env.NODE_ENV) {
+if (moment().isoWeekday() > 5 && process.env.NODE_ENV !== "development") {
     console.log("It`s weekend for gods sake!");
     process.exit();
 }
@@ -12,6 +12,9 @@ if (moment().isoWeekday() > 5 && !process.env.NODE_ENV) {
 import * as Botkit from "botkit";
 
 import Redis from "./redis_storage";
+import {User, Task} from "./types";
+import { getHashes } from './helper';
+
 import * as url from "url";
 import * as os from "os";
 import * as schedule from "node-schedule";
@@ -37,7 +40,7 @@ let bot = controller.spawn({
         throw new Error(err);
     }
 
-    if (process.env.NODE_ENV) {
+    if (process.env.NODE_ENV === "development") {
         askForTasks();
     } else {
         bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
@@ -66,39 +69,6 @@ let bot = controller.spawn({
 });
 
 Promise.promisifyAll(bot.api.channels);
-
-/**
- * Task
- */
-export class Task {
-    private _id: string;
-    constructor(private user: string, private project: string, private text: string) {
-        this._id = moment().toISOString();
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
-}
-
-class User {
-    private _channels: Channel[] = [];
-
-    constructor(private id: string) { }
-
-    addChannel(channel: Channel) {
-        this._channels.push(channel);
-    }
-
-    get channels(): Channel[] {
-        return this._channels;
-    }
-
-    get identification(): string {
-        return this.id;
-    }
-}
 
 function askForTasks() {
     let philip = getUsers().then((users) => users.find((user, index, obj) => user.identification === "U02615Q0J"));
@@ -139,14 +109,12 @@ function getUsers() {
 
 controller.hears(["#"], "direct_message", (bot, message) => {
     bot.startConversation(message, (err, convo) => {
-        let projects = [], re = /<#([^\\.\s]+)>/g, project;
-        while (project = re.exec(message.text)) {
-            projects.push(project[0]);
-            let task = new Task(message.user, project[1], message.text);
+        let channels = getHashes(message.text, (hash) => {
+            let task = new Task(message.user, hash, message.text);
             controller.storage.tasks.save(task, (err, id) => { });
-            controller.storage.tasks.add(project[1], task.id);
-        }
-        convo.say(`Toll! Halben Tag an ${projects.join(" und ")} gearbeitet. :thumbsup:`);
+            controller.storage.tasks.add(hash, task.id);
+        });
+        convo.say(`Toll! Halben Tag an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
         convo.next();
     });
 });
@@ -165,32 +133,6 @@ controller.on("channel_joined", (bot, message) => {
         text: "Cool! Ich werde von nun an fragen, ob du am Projekt " + message.channel.name + " arbeitest.",
         channel: message.channel.id
     });
-});
-
-controller.hears(["1", "eris"], "ambient", function (bot, message) {
-    if (message.channel === process.env.channel) {
-
-        controller.storage.projects.get("eris", (err, project) => {
-            if (!project) {
-                project = {
-                    id: "eris",
-                    days: 0,
-                };
-            }
-            project.days++;
-            controller.storage.projects.save(project, function (err, id) {
-                bot.api.reactions.add({
-                    timestamp: message.ts,
-                    channel: message.channel,
-                    name: "thumbsup",
-                }, function (err, res) {
-                    if (err) {
-                        bot.botkit.log("Failed to add emoji reaction :(", err);
-                    }
-                });
-            });
-        });
-    }
 });
 
 controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_message,direct_mention,mention", function (bot, message) {

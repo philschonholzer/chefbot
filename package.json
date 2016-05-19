@@ -7,7 +7,7 @@
     "prepublish": "typings install",
     "build": "tsc -p .",
     "start": "node app/bot.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc && ava **/*.test.js"
   },
   "author": "apptiva.ch",
   "license": "ISC",
@@ -19,5 +19,8 @@
     "redis": "~2.6.0-2",
     "typescript": "~1.8.10",
     "typings": "~0.8.1"
+  },
+  "devDependencies": {
+    "ava": "^0.14.0"
   }
 }

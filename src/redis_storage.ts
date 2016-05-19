@@ -1,4 +1,4 @@
-import {Task} from "./bot";
+import {Task} from "./types";
 import * as redis from "redis"; // https://github.com/NodeRedis/node_redis
 // switch to 'ioredis' because of bluebird https://github.com/luin/ioredis#basic-usage
 
