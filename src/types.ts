@@ -1,8 +1,5 @@
 import * as moment from "moment";
 
-/**
- * Task
- */
 export class Task {
     private _id: string;
     constructor(private user: string, private project: string, private text: string) {

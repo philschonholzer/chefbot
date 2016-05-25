@@ -36,11 +36,11 @@ class Store {
     };
 
     add = (key: string, value: string): PromiseLike<boolean> => {
-        return this.client.saddAsync(this.config.namespace + ":" + this.hash + ":" + key, value).then((res) => { return res; });
+        return this.client.saddAsync(this.config.namespace + ":" + this.hash + ":" + key, value);
     };
 
     members = (key: string): PromiseLike<string[]> => {
-        return this.client.smembersAsync(this.config.namespace + ":" + this.hash + ":" + key).then((res) => { return res; });
+        return this.client.smembersAsync(this.config.namespace + ":" + this.hash + ":" + key);
     };
 
     public all = (cb, options) => {
@@ -101,7 +101,6 @@ export default class Storage {
     public get tasks(): Store {
         return new Store("tasks", this.client, this.config);
     }
-
 
 }
 

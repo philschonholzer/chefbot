@@ -13,7 +13,7 @@ import * as Botkit from "botkit";
 
 import Redis from "./redis_storage";
 import {User, Task} from "./types";
-import { getHashes } from './helper';
+import { getHashes, getHashesOld, getUsersFromChannels } from "./helper";
 
 import * as url from "url";
 import * as os from "os";
@@ -90,26 +90,17 @@ function getChannels() {
 }
 
 function getUsers() {
-    return getChannels().then((channels) => {
-        return channels
-            .filter((channel) => channel.is_member)
-            .reduce<User[]>((users, channel, index, array) => {
-                channel.members.forEach((member) => {
-                    let currentUser = users.find((user, index, obj) => user.identification === member);
-                    if (!currentUser) {
-                        currentUser = new User(member);
-                        users.push(currentUser);
-                    }
-                    currentUser.addChannel(channel);
-                });
-                return users;
-            }, []);
-    });
+    return getChannels().then(getUsersFromChannels);
 };
 
 controller.hears(["#"], "direct_message", (bot, message) => {
     bot.startConversation(message, (err, convo) => {
-        let channels = getHashes(message.text, (hash) => {
+        getHashes(message.text).forEach(v => {
+            let task = new Task(message.user, v.value, message.text);
+            controller.storage.tasks.save(task, (err, id) => { });
+            controller.storage.tasks.add(v.value, task.id);
+        });
+        let channels = getHashesOld(message.text, (hash) => {
             let task = new Task(message.user, hash, message.text);
             controller.storage.tasks.save(task, (err, id) => { });
             controller.storage.tasks.add(hash, task.id);
