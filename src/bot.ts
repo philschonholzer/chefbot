@@ -68,19 +68,19 @@ let bot = controller.spawn({
     });
 });
 
-Promise.promisifyAll(bot.api.channels);
+Promise.promisifyAll(bot.api);
 
 function askForTasks() {
-    let philip = getUsers().then((users) => users.find((user, index, obj) => user.identification === "U02615Q0J"));
+    let channels = getUsers()
+        .then((users) => users.find((user, index, obj) => user.identification === "U02615Q0J"))
+        .then((user) => user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", "));
 
-    let channels = philip.then((user) => user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", "));
+    let channelId = bot.api.im.openAsync({ user: "U02615Q0J" }).then(result => result.channel.id);
 
-    bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
-        channels.then((channels) => {
-            bot.say({
-                text: `An was hast du heute gearbeitet? \n ${channels}`,
-                channel: res.channel.id
-            });
+    Promise.join(channels, channelId, (channels, channelId) => {
+        bot.say({
+            text: `An was hast du heute gearbeitet? \n ${channels}`,
+            channel: channelId
         });
     });
 }

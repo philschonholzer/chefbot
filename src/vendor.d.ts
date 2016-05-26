@@ -24,6 +24,13 @@ interface ChannelResponse {
     channels: Channel[];
 }
 
+interface OpenResponse {
+    ok: boolean;
+    channel: {
+        id: string;
+    }
+}
+
 interface API {
     reactions: {
         add(args: { timestamp: string; channel: Channel; name: string; },
@@ -36,6 +43,7 @@ interface API {
     }
     im: {
         open(args: {user: string}, callback: (err: any, res: any) => void): void;
+        openAsync(args: {user: string}): Promise<OpenResponse>;
         history(args: {channel: string, count: number}, callback: (err: Error, res: any) => void): void;
     }
 }
