@@ -1,52 +1,36 @@
 import test from "ava";
-import { getHashes, getUsersFromChannels } from "./helper";
+import * as moment from "moment";
+import { makeTasks, getUsersFromChannels } from "./helper";
 
-test("Get one hash from text", t => {
-    let test = getHashes("jheh <#dkd> k jsdkf");
-    t.is(test.length, 1);
-    t.is(test[0].valueWithMarkup, "<#dkd>");
-    t.is(test[0].value, "dkd");
+test("Get one task from text", t => {
+    let tasks = makeTasks("jheh <#dkd> k 2h jsdkf", "user1");
+    t.is(tasks.length, 1);
+    let task = tasks[0];
+    t.is("dkd", task.project);
+    t.is("<#dkd>", task.projectMarkup);
+    t.is("user1", task.user);
+    t.is("jheh <#dkd> k 2h jsdkf", task.text);
+    t.deepEqual(task.duration, moment.duration("2:00"));
 });
 
-test("Get one hash from start", t => {
-    let test = getHashes("<#dkd> k jsdkf");
-    t.is(test.length, 1);
-    t.is(test[0].valueWithMarkup, "<#dkd>");
-    t.is(test[0].value, "dkd");
-});
-
-test("Get one hash from end", t => {
-    let test = getHashes("jheh <#dkd>");
-    t.is(test.length, 1);
-    t.is(test[0].valueWithMarkup, "<#dkd>");
-    t.is(test[0].value, "dkd");
-});
-
-test("Get one hash from special char", t => {
-    let test = getHashes("jheh <#dk d> <#dk.d> sdf");
-    t.is(test.length, 0);
-    t.deepEqual(test, []);
-});
-
-test("Get two hashes from text", t => {
-    let test = getHashes("jheh <#dkd><#dkd> sdf");
-    t.is(test.length, 2);
-    t.is(test[0].valueWithMarkup, "<#dkd>");
-    t.is(test[0].value, "dkd");
-    t.is(test[1].valueWithMarkup, "<#dkd>");
-    t.is(test[1].value, "dkd");
-});
-
-test("Get no hash from text", t => {
-    let test = getHashes("jheh <dkd> k jsdkf");
-    t.is(test.length, 0);
-    t.deepEqual(test, []);
-});
-
-test("Get hashes with no string", t => {
-    let test = getHashes("");
-    t.is(test.length, 0);
-    t.deepEqual(test, []);
+test("Get three task from text", t => {
+    let tasks = makeTasks("jheh <#dkd> k <#no>, 3h <#yes>,<#yup>", "user2");
+    t.is(tasks.length, 3);
+    let task1 = tasks[0];
+    t.is("dkd", task1.project);
+    t.is("<#dkd>", task1.projectMarkup);
+    t.is("user2", task1.user);
+    t.is("jheh <#dkd> k <#no>", task1.text);
+    let task2 = tasks[1];
+    t.is("yes", task2.project);
+    t.is("<#yes>", task2.projectMarkup);
+    t.is("user2", task2.user);
+    t.is("3h <#yes>", task2.text);
+    let task3 = tasks[2];
+    t.is("yup", task3.project);
+    t.is("<#yup>", task3.projectMarkup);
+    t.is("user2", task3.user);
+    t.is("<#yup>", task3.text);
 });
 
 test("Get Users from Channels", t => {

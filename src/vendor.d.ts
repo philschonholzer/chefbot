@@ -3,6 +3,11 @@ declare module "botkit" {
     export = botkit;
 }
 
+declare module "parse-duration" {
+    let parse: (text: string) => number;
+    export = parse;
+}
+
 interface BotOptions {
     debug?: boolean;
     storage?: any;

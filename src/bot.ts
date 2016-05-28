@@ -13,7 +13,7 @@ import * as Botkit from "botkit";
 
 import Redis from "./redis_storage";
 import {User, Task} from "./types";
-import { getHashes, getHashesOld, getUsersFromChannels } from "./helper";
+import { makeTasks, getUsersFromChannels } from "./helper";
 
 import * as url from "url";
 import * as os from "os";
@@ -71,7 +71,8 @@ let bot = controller.spawn({
 Promise.promisifyAll(bot.api);
 
 function askForTasks() {
-    let channels = getUsers()
+    let channels = getChannels()
+        .then(getUsersFromChannels)
         .then((users) => users.find((user, index, obj) => user.identification === "U02615Q0J"))
         .then((user) => user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", "));
 
@@ -89,23 +90,16 @@ function getChannels() {
     return bot.api.channels.listAsync({ exclude_archived: 1 }).then((res) => { return res.channels; });
 }
 
-function getUsers() {
-    return getChannels().then(getUsersFromChannels);
-};
-
 controller.hears(["#"], "direct_message", (bot, message) => {
     bot.startConversation(message, (err, convo) => {
-        getHashes(message.text).forEach(v => {
-            let task = new Task(message.user, v.value, message.text);
+        let tasks = makeTasks(message.text, message.user).map(task => {
             controller.storage.tasks.save(task, (err, id) => { });
-            controller.storage.tasks.add(v.value, task.id);
+            controller.storage.tasks.add(task.project, task.id);
+            return task;
         });
-        let channels = getHashesOld(message.text, (hash) => {
-            let task = new Task(message.user, hash, message.text);
-            controller.storage.tasks.save(task, (err, id) => { });
-            controller.storage.tasks.add(hash, task.id);
-        });
-        convo.say(`Toll! Halben Tag an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
+        let channels = tasks.map(task => task.projectMarkup);
+        let duration = tasks.reduce<moment.Duration>((duration, task) => duration.add(task.duration), moment.duration());
+        convo.say(`Toll! ${duration.asDays} an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
         convo.next();
     });
 });

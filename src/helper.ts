@@ -1,24 +1,17 @@
-import { User } from "./types";
+import * as parse from "parse-duration";
+import * as moment from "moment";
+import { User, Task } from "./types";
 
-export function getHashesOld(text: string, callback?: (hash: string) => void): string[] {
-    let projects: string[] = [], re = /<#([^\\.\s>]+)>/g, project;
-    while (project = re.exec(text)) {
-        if (callback) callback(project[1]);
-        projects.push(project[0]);
-    }
-    return projects;
-}
-
-export function getHashes(text: string) {
-    return getOccurrence(text, /<#([^\\.\s>]+)>/g).map(value => { return { valueWithMarkup: value[0], value: value[1] }; });
-}
-
-export function getOccurrence(text: string, regex: RegExp) {
-    let projects: RegExpExecArray[] = [], project;
-    while (project = regex.exec(text)) {
-        projects.push(project);
-    }
-    return projects;
+export function makeTasks(text: string, user: string) {
+    let regex = /<#([^\\.\s>]+)>/;
+    return text.split(/[,.;]\s?/)
+    .filter(s => s.match(regex) != null) // for hashes not from channels /<#[^\\.\s>]+>|#[^\\.\s>]+/
+    .reduce<Task[]>((tasks, part) => {
+        let hashes = regex.exec(part);
+        let duration = moment.duration(parse(part));
+        tasks.push(new Task(hashes[1], part, user, duration));
+        return tasks;
+    }, []);
 }
 
 export function getUsersFromChannels(channels: Channel[]): User[] {
