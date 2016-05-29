@@ -114,6 +114,8 @@ declare module "redis" {
         saddAsync(...args:any[]): Promise<boolean>;
         smembersAsync(args:any[]): Promise<string[]>;
         smembersAsync(...args:any[]): Promise<string[]>;
+        incrbyAsync(args:any[]): Promise<number>;
+        incrbyAsync(...args:any[]): Promise<number>;
     }
 
 }

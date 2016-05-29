@@ -68,7 +68,8 @@ let bot = controller.spawn({
     });
 });
 
-Promise.promisifyAll(bot.api);
+Promise.promisifyAll(bot.api.channels);
+Promise.promisifyAll(bot.api.im);
 
 function askForTasks() {
     let channels = getChannels()
@@ -80,7 +81,7 @@ function askForTasks() {
 
     Promise.join(channels, channelId, (channels, channelId) => {
         bot.say({
-            text: `An was hast du heute gearbeitet? \n ${channels}`,
+            text: `An was hast du heute gearbeitet? \n${channels}`,
             channel: channelId
         });
     });
@@ -95,11 +96,12 @@ controller.hears(["#"], "direct_message", (bot, message) => {
         let tasks = makeTasks(message.text, message.user).map(task => {
             controller.storage.tasks.save(task, (err, id) => { });
             controller.storage.tasks.add(task.project, task.id);
+            controller.storage.tasks.increment(task.project, task.duration.asMilliseconds());
             return task;
         });
         let channels = tasks.map(task => task.projectMarkup);
         let duration = tasks.reduce<moment.Duration>((duration, task) => duration.add(task.duration), moment.duration());
-        convo.say(`Toll! ${duration.asDays} an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
+        convo.say(`Toll! ${duration.asHours()}h an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
         convo.next();
     });
 });
@@ -122,23 +124,11 @@ controller.on("channel_joined", (bot, message) => {
 
 controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_message,direct_mention,mention", function (bot, message) {
     getChannels().then((channels) => channels.filter((channel) => channel.is_member).forEach((channel) => {
-        controller.storage.tasks.members(channel.id).then((value) => {
-            bot.reply(message, `Bisher wurde ${value.length / 2} Tage an <#${channel.id}> gearbeitet.`);
+        controller.storage.tasks.duration(channel.id).then(duration => {
+            let days = (moment.duration(Number(duration)).asHours() / 8).toFixed(2);
+            bot.reply(message, `Bisher wurde ${days} Tage an <#${channel.id}> gearbeitet.`);
         });
     }));
-    controller.storage.tasks.all((err, tasks: Task[]) => {
-        if (tasks) {
-            bot.reply(message, `Bisher wurde ${tasks.length / 2} Tage gearbeitet.`);
-        }
-    }, {});
-    controller.storage.projects.get("eris", function (err, project) {
-        if (project) {
-            bot.reply(message, "Bisher wurde " + project.days + " Tage an Eris gearbeitet.");
-        } else {
-            bot.reply(message, "Ich habe noch keine Projektdaten...");
-        }
-    });
-
 });
 
 controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", function (bot, message) {

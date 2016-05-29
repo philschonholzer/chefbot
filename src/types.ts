@@ -3,8 +3,9 @@ import * as moment from "moment";
 export class Task {
     private _id: string;
 
-    constructor(public project?: string, public text?: string, public user?: string, public _duration?: moment.Duration) {
+    constructor(public project?: string, public text?: string, public user?: string, public duration?: moment.Duration) {
         this._id = moment().toISOString();
+        if (duration < moment.duration(5, "minutes")) this.duration = moment.duration(4, "hours");
     }
 
     get id(): string {
@@ -13,10 +14,6 @@ export class Task {
 
     get projectMarkup(): string {
         return `<#${this.project}>`;
-    }
-
-    get duration(): moment.Duration {
-        return this._duration || moment.duration(4, "hours");
     }
 
 }

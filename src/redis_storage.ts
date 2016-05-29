@@ -3,6 +3,7 @@ import * as redis from "redis"; // https://github.com/NodeRedis/node_redis
 // switch to 'ioredis' because of bluebird https://github.com/luin/ioredis#basic-usage
 
 import * as Promise from "bluebird";
+import * as moment from "moment";
 
 
 
@@ -41,6 +42,14 @@ class Store {
 
     members = (key: string): PromiseLike<string[]> => {
         return this.client.smembersAsync(this.config.namespace + ":" + this.hash + ":" + key);
+    };
+
+    increment = (key: string, value: number): PromiseLike<number> => {
+        return this.client.incrbyAsync(this.config.namespace + ":" + this.hash + ":" + key + ":duration", value);
+    };
+
+    duration = (key: string): PromiseLike<string> => {
+        return this.client.getAsync(this.config.namespace + ":" + this.hash + ":" + key + ":duration");
     };
 
     public all = (cb, options) => {
