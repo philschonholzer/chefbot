@@ -63,3 +63,11 @@ This bot demonstrates many of the core features of Botkit:
 
     -> http://howdy.ai/botkit
 
+## Docker
+
+`docker build -t chefbot`
+
+`docker run --name redis -v /data -d redis:alpine`
+
+`docker run --name app -it --rm --link redis chefbot` 
+

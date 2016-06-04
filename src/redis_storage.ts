@@ -87,7 +87,7 @@ export default class Storage {
         this.config = config || {};
         this.config.namespace = this.config.namespace || "botkit:store";
 
-        this.client = redis.createClient(config); // could pass specific redis config here
+        this.client = redis.createClient(this.config); // could pass specific redis config here
         Promise.promisifyAll(this.client);
     }
 
