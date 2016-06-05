@@ -2,7 +2,6 @@ FROM mhart/alpine-node:base
 # FROM mhart/alpine-node:base-0.10
 # FROM mhart/alpine-node
 
-ENV token xoxb-29780057110-b778fgKwxA8io2aMa8i0jdSQ
 ENV REDIS_URL redis://redis:6397
 ENV channel C0XJG50EN
 ENV NODE_ENV development
