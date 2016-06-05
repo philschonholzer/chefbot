@@ -69,5 +69,5 @@ This bot demonstrates many of the core features of Botkit:
 
 `docker run --name redis -v /data -d redis:alpine`
 
-`docker run --name app -it --rm --link redis chefbot` 
+`docker run --name app -d --link redis -e "token=slack-token" chefbot`
 
