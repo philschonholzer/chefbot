@@ -2,7 +2,7 @@ FROM mhart/alpine-node:base
 # FROM mhart/alpine-node:base-0.10
 # FROM mhart/alpine-node
 
-ENV REDIS_URL redis://redis:6397
+ENV REDIS_URL redis://redis:6379
 ENV channel C0XJG50EN
 ENV NODE_ENV development
 
