@@ -75,17 +75,17 @@ Promise.promisifyAll(bot.api.im);
 function askForTasks() {
     let channels = getChannels()
         .then(getUsersFromChannels)
-        .then((users) => users.find((user, index, obj) => user.identification === "U02615Q0J"))
-        .then((user) => user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", "));
+        .then((users) => users.forEach((user) => {
+            let channels = user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", ");
+            let channelId = bot.api.im.openAsync({ user: user.identification }).then(result => result.channel.id);
 
-    let channelId = bot.api.im.openAsync({ user: "U02615Q0J" }).then(result => result.channel.id);
-
-    Promise.join(channels, channelId, (channels, channelId) => {
-        bot.say({
-            text: `An was hast du heute gearbeitet? \n${channels}`,
-            channel: channelId
-        });
-    });
+            Promise.join(channels, channelId, (channels, channelId) => {
+                bot.say({
+                    text: `An was hast du heute gearbeitet? \n${channels}`,
+                    channel: channelId
+                });
+            });
+        }));
 }
 
 function getChannels() {
@@ -100,10 +100,14 @@ controller.hears(["#"], "direct_message", (bot, message) => {
             controller.storage.tasks.increment(task.project, task.duration.asMilliseconds());
             return task;
         });
-        let channels = tasks.map(task => task.projectMarkup);
-        let duration = tasks.reduce<moment.Duration>((duration, task) => duration.add(task.duration), moment.duration());
-        convo.say(`Toll! ${duration.asHours()}h an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
-        convo.next();
+        if (tasks.length > 0) {
+            let channels = tasks.map(task => task.projectMarkup);
+            let duration = tasks.reduce<moment.Duration>((duration, task) => duration.add(task.duration), moment.duration());
+            convo.say(`Toll! ${duration.asHours()}h an ${channels.join(" und ")} gearbeitet. :thumbsup:`);
+            convo.next();
+        } else {
+            convo.say("Genial! ... Damit ich mir dies merken kann, muss du ein Slack-Channel erwähnen, wie beispielsweise '#dashboard-notaufnahme'.");
+        }
     });
 });
 

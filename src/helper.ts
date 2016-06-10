@@ -20,7 +20,7 @@ export function getUsersFromChannels(channels: Channel[]): User[] {
     return channels
         .filter((channel) => channel.is_member)
         .reduce<User[]>((users, channel, index, array) => {
-            channel.members.forEach((member) => {
+            channel.members.filter(member => member.startsWith("U")).forEach((member) => {
                 let currentUser = users.find((user, index, obj) => user.identification === member);
                 if (!currentUser) {
                     currentUser = new User(member);

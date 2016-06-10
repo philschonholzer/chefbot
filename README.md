@@ -65,7 +65,7 @@ This bot demonstrates many of the core features of Botkit:
 
 ## Docker
 
-`docker build -t chefbot`
+`docker build -t chefbot .`
 
 `docker run --name redis -v /data -d redis:alpine`
 

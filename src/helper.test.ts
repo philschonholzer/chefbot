@@ -33,6 +33,11 @@ test("Get three task from text", t => {
     t.is("<#yup>", task3.text);
 });
 
+test("Hash thats no channel", t => {
+    let tasks = makeTasks("Worked on #thisproject for 5h", "user3");
+    t.is(tasks.length, 0);
+});
+
 test("Get Users from Channels", t => {
     let channel: Channel = {id: "1", name: "nice", is_member: true, members: ["user1", "user2"]};
     let users = getUsersFromChannels([channel]);

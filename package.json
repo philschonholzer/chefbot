@@ -2,7 +2,7 @@
   "name": "chefbot",
   "version": "0.0.1",
   "description": "Your boss!",
-  "main": "bot.js",
+  "main": "app/bot.js",
   "scripts": {
     "prepublish": "typings install",
     "build": "tsc -p .",
