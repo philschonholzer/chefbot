@@ -71,12 +71,18 @@ let bot = controller.spawn({
 
 Promise.promisifyAll(bot.api.channels);
 Promise.promisifyAll(bot.api.im);
+Promise.promisifyAll(bot.api.users);
 
 function askForTasks() {
-    let channels = getChannels()
+    getChannels()
         .then(getUsersFromChannels)
-        .then((users) => users.forEach((user) => {
-            let channels = user.channels.map<string>((channel, index, array) => `<#${channel.id}>`).join(", ");
+        .then(filterBotUsers)
+        .then(askAllUsers);
+}
+
+function askAllUsers(users: User[]) {
+    users.forEach(user => {
+            let channels = user.channels.map<string>(channel => `<#${channel.id}>`).join(", ");
             let channelId = bot.api.im.openAsync({ user: user.identification }).then(result => result.channel.id);
 
             Promise.join(channels, channelId, (channels, channelId) => {
@@ -85,7 +91,13 @@ function askForTasks() {
                     channel: channelId
                 });
             });
-        }));
+        });
+}
+
+function filterBotUsers(users: User[]) {
+    return bot.api.users.listAsync({})
+        .then(res => res.members.filter(member => member.is_bot))
+        .then(bots => users.filter(user => !bots.some(bot => bot.id === user.identification)));
 }
 
 function getChannels() {
@@ -94,11 +106,11 @@ function getChannels() {
 
 controller.hears(["#"], "direct_message", (bot, message) => {
     bot.startConversation(message, (err, convo) => {
-        let tasks = makeTasks(message.text, message.user).map(task => {
+        let tasks = makeTasks(message.text, message.user);
+        tasks.forEach(task => {
             controller.storage.tasks.save(task, (err, id) => { });
             controller.storage.tasks.add(task.project, task.id);
             controller.storage.tasks.increment(task.project, task.duration.asMilliseconds());
-            return task;
         });
         if (tasks.length > 0) {
             let channels = tasks.map(task => task.projectMarkup);

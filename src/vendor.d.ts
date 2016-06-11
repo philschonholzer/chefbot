@@ -36,6 +36,11 @@ interface OpenResponse {
     }
 }
 
+interface UsersResponse {
+    ok: boolean;
+    members: Member[];
+}
+
 interface API {
     reactions: {
         add(args: { timestamp: string; channel: Channel; name: string; },
@@ -50,6 +55,9 @@ interface API {
         open(args: {user: string}, callback: (err: any, res: any) => void): void;
         openAsync(args: {user: string}): Promise<OpenResponse>;
         history(args: {channel: string, count: number}, callback: (err: Error, res: any) => void): void;
+    }
+    users: {
+        listAsync(args: {}): Promise<UsersResponse>;
     }
 }
 
@@ -72,6 +80,11 @@ interface Channel {
     name: string;
     is_member: boolean;
     members: string[];
+}
+
+interface Member {
+    id: string;
+    is_bot: boolean;
 }
 
 interface Message {

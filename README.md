@@ -1,73 +1,47 @@
 # ChefBot
 
+## Bot verwenden
 
-           ______     ______     ______   __  __     __     ______
-          /\  == \   /\  __ \   /\__  _\ /\ \/ /    /\ \   /\__  _\
-          \ \  __<   \ \ \/\ \  \/_/\ \/ \ \  _"-.  \ \ \  \/_/\ \/
-           \ \_____\  \ \_____\    \ \_\  \ \_\ \_\  \ \_\    \ \_\
-            \/_____/   \/_____/     \/_/   \/_/\/_/   \/_/     \/_/
+Bot in die gewünschten Channels einladen. Er frägt dann täglich die User dieser Channels was sie heute gemacht haben.
+
+### Rapportieren
+
+Rapportieren mit einem Channelname ("#" nicht vergessen) und falls gewüsncht einer Dauer. Falls keine Dauer angegeben wird wird 4h genommen.
+
+### Auslesen
+
+Bot direkt ansprechen mit "übersicht", "total", "projekt", "tage" oder "arbeit". Danach gibt er an wie lange an den unterschiedlichen Projekten gearbeitet wurde.
 
 
-This is a sample Slack bot built with Botkit.
+## Technik
 
-This bot demonstrates many of the core features of Botkit:
+Bot ist in TypeScript basierend auf Node.js geschrieben. Als DB wird Redis verwendet.
 
-* Connect to Slack using the real time API
-* Receive messages based on "spoken" patterns
-* Reply to messages
-* Use the conversation system to ask questions
-* Use the built in storage system to store and retrieve information
-  for a user.
+### Lokal ausführen
 
-## RUN THE BOT:
+ENV für Redis, Slack-Token und eigener Slack-Channel setzen.
+z.B.
 
-  Get a Bot token from Slack:
+```json
+"token": "slack-token",
+"REDIS_URL": "redis://redis:6379",
+"channel": "C0XJG50EN",
+"NODE_ENV": "development"
+```
 
-    -> http://my.slack.com/services/new/bot
+`npm install`
 
-  Run your bot from the command line:
+`npm start`
 
-    token=<MY TOKEN> node bot.js
+### Tests
 
-## USE THE BOT:
+`npm test`
 
-  Find your bot inside Slack to send it a direct message.
-
-  Say: "Hello"
-
-  The bot will reply "Hello!"
-
-  Say: "who are you?"
-
-  The bot will tell you its name, where it running, and for how long.
-
-  Say: "Call me <nickname>"
-
-  Tell the bot your nickname. Now you are friends.
-
-  Say: "who am I?"
-
-  The bot will tell you your nickname, if it knows one for you.
-
-  Say: "shutdown"
-
-  The bot will ask if you are sure, and then shut itself down.
-
-  Make sure to invite your bot into other channels using /invite @<my bot>!
-
-## EXTEND THE BOT:
-
-  Botkit is has many features for building cool and useful bots!
-
-  Read all about it here:
-
-    -> http://howdy.ai/botkit
-
-## Docker
+### Docker
 
 `docker build -t chefbot .`
 
-`docker run --name redis -v /data -d redis:alpine`
+`docker run --name redis -v /data -d redis:alpine` Add -p 6379:6379 if you want to reach redis from the host.
 
 `docker run --name app -d --link redis -e "token=slack-token" chefbot`
 
