@@ -1,5 +1,5 @@
-if (!process.env.token || !process.env.channel || !process.env.REDIS_URL) {
-    console.log("Error: Specify token, channel and REDIS_URL in environment");
+if (!process.env.token || !process.env.admin || !process.env.REDIS_URL) {
+    console.log("Error: Specify token, admin-user-id and REDIS_URL in environment");
     process.exit(1);
 }
 
@@ -44,7 +44,7 @@ let bot = controller.spawn({
     if (process.env.NODE_ENV === "development") {
         askForTasks();
     } else {
-        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
+        bot.api.im.open({ user: process.env.admin }, (err, res) => {
             bot.say({
                 text: `Guten Morgen!`,
                 channel: res.channel.id
@@ -57,7 +57,7 @@ let bot = controller.spawn({
     });
 
     schedule.scheduleJob("0 0 21 * * 1-5", () => {
-        bot.api.im.open({ user: "U02615Q0J" }, (err, res) => {
+        bot.api.im.open({ user: process.env.admin }, (err, res) => {
             bot.say({
                 text: `Gut Nacht!`,
                 channel: res.channel.id

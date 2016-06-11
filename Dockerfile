@@ -3,8 +3,8 @@ FROM mhart/alpine-node:base
 # FROM mhart/alpine-node
 
 ENV REDIS_URL redis://redis:6379
-ENV channel C0XJG50EN
-ENV NODE_ENV development
+ENV admin U02615Q0J
+ENV NODE_ENV production
 
 WORKDIR /src
 ADD . .
