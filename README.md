@@ -41,7 +41,8 @@ z.B.
 
 `docker build -t chefbot .`
 
-`docker run --name redis -v /data -d redis:alpine` Add -p 6379:6379 if you want to reach redis from the host.
+`docker run --name redis -v /data -p 6379:6379 -d redis:alpine redis-server --save 900 1` 
+With saving every 15min. Add -p 6379:6379 if you want to reach redis from the host.
 
 `docker run --name app -d --link redis -e "token=slack-token" chefbot`
 
