@@ -46,7 +46,7 @@ let bot = controller.spawn({
     } else {
         bot.api.im.open({ user: process.env.admin }, (err, res) => {
             bot.say({
-                text: `Guten Morgen!`,
+                text: `Hallo!`,
                 channel: res.channel.id
             });
         });
@@ -54,18 +54,6 @@ let bot = controller.spawn({
 
     schedule.scheduleJob("0 0 14 * * 1-5", () => {
         askForTasks();
-    });
-
-    schedule.scheduleJob("0 0 21 * * 1-5", () => {
-        bot.api.im.open({ user: process.env.admin }, (err, res) => {
-            bot.say({
-                text: `Gut Nacht!`,
-                channel: res.channel.id
-            });
-        });
-        setTimeout(function () {
-            process.exit();
-        }, 3000);
     });
 });
 
@@ -119,18 +107,10 @@ controller.hears(["#"], "direct_message", (bot, message) => {
             convo.next();
         } else {
             convo.say("Genial! ... Damit ich mir dies merken kann, muss du ein Slack-Channel erwähnen, wie beispielsweise '#dashboard-notaufnahme'.");
+            convo.next();
         }
     });
 });
-
-// controller.on("direct_message", (bot, message) => {
-//     if (message.text.includes("#")) {
-//         bot.startConversation(message, (err, convo) => {
-//             convo.say("Sehr schön!");
-//             convo.next();
-//         });
-//     }
-// });
 
 controller.on("channel_joined", (bot, message) => {
     bot.say({
@@ -147,6 +127,8 @@ controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_m
         });
     }));
 });
+
+/* Original reactions */
 
 controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", function (bot, message) {
 
