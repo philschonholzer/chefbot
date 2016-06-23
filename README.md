@@ -25,7 +25,7 @@ z.B.
 ```json
 "token": "slack-token",
 "REDIS_URL": "redis://redis:6379",
-"channel": "C0XJG50EN",
+"admin": "C0XJG50EN",
 "NODE_ENV": "development"
 ```
 
