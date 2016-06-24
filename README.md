@@ -24,7 +24,7 @@ z.B.
 
 ```json
 "token": "slack-token",
-"REDIS_URL": "redis://redis:6379",
+"REDIS_URL": "redis://redis-chefbot:6379",
 "admin": "C0XJG50EN",
 "NODE_ENV": "development"
 ```
@@ -55,3 +55,21 @@ gcloud docker push eu.gcr.io/demoinstances-1289/chefbot
 sudo docker run --name redis-chefbot -v /data -d redis:alpine redis-server --save 900 1
 sudo docker run --name chefbot -d --link redis-chefbot -e "token=slack-token" eu.gcr.io/demoinstances-1289/chefbot
 ``` 
+
+#### Backup
+
+```bash
+# Backup
+sudo docker run --rm --volumes-from redis-chefbot -v $(pwd):/backup busybox tar cvf /backup/dump.tar /data
+
+# Restore
+sudo docker run --rm --volumes-from redis-chefbot -v $(pwd):/backup busybox tar xvf /backup/dump.tar
+# Verify
+sudo docker run --rm --volumes-from ca.redis-dumps busybox ls -l  /data
+```
+
+#### Redis Query
+
+```bash
+sudo docker run --name redis-client --link redis-chefbot -it --rm redis:alpine redis-cli -h redis-chefbot
+```

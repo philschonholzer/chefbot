@@ -3,12 +3,6 @@ if (!process.env.token || !process.env.admin || !process.env.REDIS_URL) {
     process.exit(1);
 }
 
-import * as moment from "moment";
-if (moment().isoWeekday() > 5 && process.env.NODE_ENV !== "development") {
-    console.log("It`s weekend for gods sake!");
-    process.exit();
-}
-
 import * as Botkit from "botkit";
 
 import Redis from "./redis_storage";
@@ -17,6 +11,7 @@ import { makeTasks, getUsersFromChannels } from "./helper";
 
 import * as url from "url";
 import * as os from "os";
+import * as moment from "moment";
 import * as schedule from "node-schedule";
 import * as Promise from "bluebird";
 

@@ -2,7 +2,7 @@ FROM mhart/alpine-node:base
 # FROM mhart/alpine-node:base-0.10
 # FROM mhart/alpine-node
 
-ENV REDIS_URL redis://redis:6379
+ENV REDIS_URL redis://redis-chefbot:6379
 ENV admin U02615Q0J
 ENV NODE_ENV production
 
