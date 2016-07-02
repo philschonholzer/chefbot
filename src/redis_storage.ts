@@ -1,5 +1,6 @@
 import {Task} from "./types";
 import * as Redis from "ioredis";
+import * as Promise from "bluebird";
 import * as moment from "moment";
 
 
@@ -97,6 +98,10 @@ export default class Storage {
 
     public get tasks(): Store {
         return new Store("tasks", this.redis);
+    }
+
+    public flush() {
+        return this.redis.flushall();
     }
 
 }

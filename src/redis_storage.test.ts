@@ -9,16 +9,21 @@ test.before(t => {
         host: "docker",
         port: 6379
     });
+    red.flush();
 });
 
-test("Add a key", t => {
+test.cb("Add a key", t => {
     t.plan(2);
     t.pass();
     console.log("Start");
-    red.tasks.add("foo", "bars").done( v => {
+    red.tasks.add("foo", "bars").then( v => {
         console.log(`Done:  ${v}`);
     }, e => {
         console.log(`Error: ${e}`);
+
+    }).finally(() => {
+        console.log("End");
+        t.end();
     });
     t.pass();
 });
@@ -33,13 +38,13 @@ test("Promise", t => {
 });
 
 
-test("Add a duration", t => {
+test.cb("Add a duration", t => {
     t.plan(1);
     red.tasks.increment("foo", 10).then(value => {
         red.tasks.duration("foo").then((obj) => {
             console.log("read from redis " + obj);
             t.is(obj, "10");
-            t.pass("read from redis");
+            t.end();
         });
     });
 });
