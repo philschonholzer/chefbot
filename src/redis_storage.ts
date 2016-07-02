@@ -1,59 +1,45 @@
 import {Task} from "./types";
-import * as redis from "redis"; // https://github.com/NodeRedis/node_redis
-// switch to 'ioredis' because of bluebird https://github.com/luin/ioredis#basic-usage
-
-import * as Promise from "bluebird";
+import * as Redis from "ioredis";
 import * as moment from "moment";
 
-
-
-// https://github.com/NodeRedis/node_redis
-// #options-is-an-object-with-the-following-possible-properties for a full list of the valid options
-interface Config {
-    namespace?: string;
-    host?: string;
-    port?: string;
-    methods?: string;
-    auth_pass?: string;
-}
 
 /**
  * Store
  */
 class Store {
 
-    constructor(private hash: string, private client: redis.RedisClient, private config: Config) {
+    constructor(private hash: string, private client: IORedis.Redis) {
 
     }
 
     public get = (id: string, cb: (err: any, obj: any) => void) => {
-        this.client.hget(this.config.namespace + ":" + this.hash, id, (err, res) => cb(err, JSON.parse(res)));
+        this.client.hget(this.hash, id, (err, res) => cb(err, JSON.parse(res)));
     };
 
     public save = (object, cb) => {
         if (!object.id) // Silently catch this error?
             return cb(new Error("The given object must have an id property"), {});
-        this.client.hset(this.config.namespace + ":" + this.hash, object.id, JSON.stringify(object), cb);
+        this.client.hset(this.hash, object.id, JSON.stringify(object), cb);
     };
 
-    add = (key: string, value: string): PromiseLike<boolean> => {
-        return this.client.saddAsync(this.config.namespace + ":" + this.hash + ":" + key, value);
+    add = (key: string, value: string): Promise<boolean> => {
+        return this.client.sadd(this.hash + ":" + key, value);
     };
 
     members = (key: string): PromiseLike<string[]> => {
-        return this.client.smembersAsync(this.config.namespace + ":" + this.hash + ":" + key);
+        return this.client.smembers(this.hash + ":" + key);
     };
 
     increment = (key: string, value: number): PromiseLike<number> => {
-        return this.client.incrbyAsync(this.config.namespace + ":" + this.hash + ":" + key + ":duration", value);
+        return this.client.incrby(this.hash + ":" + key + ":duration", value);
     };
 
     duration = (key: string): PromiseLike<string> => {
-        return this.client.getAsync(this.config.namespace + ":" + this.hash + ":" + key + ":duration");
+        return this.client.get(this.hash + ":" + key + ":duration");
     };
 
     public all = (cb, options) => {
-        this.client.hgetall(this.config.namespace + ":" + this.hash, function (err, res) {
+        this.client.hgetall(this.hash, function (err, res) {
             if (err)
                 return cb(err, {});
 
@@ -76,39 +62,41 @@ class Store {
 
 }
 
+
+
+
 /**
  * Storage
  */
 export default class Storage {
 
-    private client: redis.RedisClient;
+    private redis: IORedis.Redis;
 
-    constructor(private config?: Config) {
+    constructor(private config?: IORedis.RedisOptions) {
         this.config = config || {};
-        this.config.namespace = this.config.namespace || "botkit:store";
+        this.config.keyPrefix = this.config.keyPrefix || "chefbot-store:";
 
-        this.client = redis.createClient(this.config); // could pass specific redis config here
-        Promise.promisifyAll(this.client);
+        this.redis = new Redis(this.config); // could pass specific redis config here
     }
 
     public get teams(): Store {
-        return new Store("teams", this.client, this.config);
+        return new Store("teams", this.redis);
     }
 
     public get users(): Store {
-        return new Store("users", this.client, this.config);
+        return new Store("users", this.redis);
     }
 
     public get channels(): Store {
-        return new Store("channels", this.client, this.config);
+        return new Store("channels", this.redis);
     }
 
     public get projects(): Store {
-        return new Store("projects", this.client, this.config);
+        return new Store("projects", this.redis);
     }
 
     public get tasks(): Store {
-        return new Store("tasks", this.client, this.config);
+        return new Store("tasks", this.redis);
     }
 
 }

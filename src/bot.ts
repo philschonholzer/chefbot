@@ -18,10 +18,9 @@ import * as Promise from "bluebird";
 let redisURL = url.parse(process.env.REDIS_URL);
 let auth = redisURL.auth || ":";
 let redisStorage = new Redis({
-    namespace: "botkit-example",
     host: redisURL.hostname,
-    port: redisURL.port,
-    auth_pass: auth.split(":")[1]
+    port: Number(redisURL.port),
+    password: auth.split(":")[1]
 });
 
 let controller = Botkit.slackbot({

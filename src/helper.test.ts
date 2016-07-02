@@ -21,16 +21,19 @@ test("Get three task from text", t => {
     t.is("<#dkd>", task1.projectMarkup);
     t.is("user2", task1.user);
     t.is("jheh <#dkd> k <#no>", task1.text);
+    t.deepEqual(task1.duration, moment.duration("4:00"));
     let task2 = tasks[1];
     t.is("yes", task2.project);
     t.is("<#yes>", task2.projectMarkup);
     t.is("user2", task2.user);
     t.is("3h <#yes>", task2.text);
+    t.deepEqual(task2.duration, moment.duration("3:00"));
     let task3 = tasks[2];
     t.is("yup", task3.project);
     t.is("<#yup>", task3.projectMarkup);
     t.is("user2", task3.user);
     t.is("<#yup>", task3.text);
+    t.deepEqual(task3.duration, moment.duration("4:00"));
 });
 
 test("Hash thats no channel", t => {

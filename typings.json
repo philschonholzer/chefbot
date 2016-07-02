@@ -1,8 +1,8 @@
 {
   "globalDependencies": {
+    "ioredis": "registry:dt/ioredis#0.0.0+20160521152653",
     "node": "registry:dt/node#4.0.0+20160412142033",
-    "node-schedule": "registry:dt/node-schedule#0.0.0+20160316155526",
-    "redis": "registry:dt/redis#0.12.1+20160316155526"
+    "node-schedule": "registry:dt/node-schedule#0.0.0+20160316155526"
   },
   "dependencies": {
     "bluebird": "registry:npm/bluebird#3.3.4+20160515010139",

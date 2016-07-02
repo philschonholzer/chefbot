@@ -6,7 +6,7 @@ Bot in die gewünschten Channels einladen. Er frägt dann täglich die User dies
 
 ### Rapportieren
 
-Rapportieren mit einem Channelname ("#" nicht vergessen) und falls gewüsncht einer Dauer. Falls keine Dauer angegeben wird wird 4h genommen.
+Rapportieren mit einem Channelname ("#" nicht vergessen) und falls gewünscht einer Dauer. Falls keine Dauer angegeben wird wird 4h genommen.
 
 ### Auslesen
 
