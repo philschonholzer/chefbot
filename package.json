@@ -12,16 +12,16 @@
   "author": "apptiva.ch",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "~3.3.5",
-    "botkit": "0.0.12",
+    "bluebird": "~3.3.4",
+    "botkit": "~0.2.2",
     "ioredis": "^2.2.0",
-    "moment": "~2.12.0",
+    "moment": "~2.14.0",
     "node-schedule": "~1.1.0",
     "parse-duration": "^0.1.1",
     "typescript": "~1.8.10",
     "typings": "~1.3.1"
   },
   "devDependencies": {
-    "ava": "^0.14.0"
+    "ava": "^0.15.0"
   }
 }

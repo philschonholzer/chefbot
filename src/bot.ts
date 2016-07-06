@@ -1,5 +1,5 @@
 if (!process.env.token || !process.env.admin || !process.env.REDIS_URL) {
-    console.log("Error: Specify token, admin-user-id and REDIS_URL in environment");
+    console.log("Error: Specify token, admin (user-id) and REDIS_URL in environment");
     process.exit(1);
 }
 

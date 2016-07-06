@@ -101,7 +101,7 @@ export default class Storage {
     }
 
     public flush() {
-        return this.redis.flushall();
+        return this.redis.flushdb();
     }
 
 }
