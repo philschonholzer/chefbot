@@ -35,7 +35,15 @@ z.B.
 
 ### Tests
 
-`npm test`
+```bash
+# Start redis
+docker run -d -v /data --network="host" redis:alpine redis-server --save 900 1
+
+# Start test env
+docker run -it -v /e/Dev/ChefBot:/bot --rm --network="host" mhart/alpine-node sh
+cd bot
+npm test
+```
 
 ### Docker
 
