@@ -1,0 +1,15 @@
+version: '2'
+services:
+  chefbot:
+    build: .
+    links:
+      - redis
+    env_file:
+        - .env
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - "/data"
+    restart: always
+    command: redis-server --save 900 1

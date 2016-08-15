@@ -40,10 +40,8 @@ z.B.
 ### Docker
 
 ```bash
-docker build -t chefbot .
-docker run --name redis-chefbot -v /data -p 6379:6379 -d redis:alpine redis-server --save 900 1
-# With saving every 15min. Add -p 6379:6379 if you want to reach redis from the host.
-docker run --name chefbot -d --link redis-chefbot -e "token=slack-token" chefbot
+# Docker Compose (empfohlen)
+docker-compose up -d --build
 ```
 
 ### Google Cloud
@@ -53,8 +51,8 @@ docker build -t eu.gcr.io/demoinstances-1289/chefbot .
 gcloud compute ssh demo
 gcloud docker push eu.gcr.io/demoinstances-1289/chefbot
 sudo docker run --name redis-chefbot -v /data -d redis:alpine redis-server --save 900 1
-sudo docker run --name chefbot -d --link redis-chefbot -e "token=slack-token" eu.gcr.io/demoinstances-1289/chefbot
-``` 
+sudo docker run --name chefbot -d --link redis-chefbot:redis -e "token=slack-token" eu.gcr.io/demoinstances-1289/chefbot
+```
 
 #### Backup
 
@@ -71,5 +69,5 @@ sudo docker run --rm --volumes-from ca.redis-dumps busybox ls -l  /data
 #### Redis Query
 
 ```bash
-sudo docker run --name redis-client --link redis-chefbot -it --rm redis:alpine redis-cli -h redis-chefbot
+sudo docker run --name redis-client --link redis-chefbot:redis -it --rm redis:alpine redis-cli -h redis
 ```
