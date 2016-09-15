@@ -5,15 +5,15 @@ if (!process.env.token || !process.env.admin || !process.env.REDIS_URL) {
 
 import * as Botkit from "botkit";
 
-import Redis from "./redis_storage";
-import {User, Task} from "./types";
-import { makeTasks, getUsersFromChannels } from "./helper";
-
 import * as url from "url";
 import * as os from "os";
 import * as moment from "moment";
 import * as schedule from "node-schedule";
 import * as Promise from "bluebird";
+
+import Redis from "./redis_storage";
+import {User, Task} from "./types";
+import { makeTasks, getUsersFromChannels } from "./helper";
 
 let redisURL = url.parse(process.env.REDIS_URL);
 let auth = redisURL.auth || ":";
