@@ -36,6 +36,22 @@ test("Get three task from text", t => {
     t.deepEqual(task3.duration, moment.duration("4:00"));
 });
 
+test("Remove cleartext from channel hash", t => {
+    let tasks = makeTasks("jheh <#kd83gh39|schneesport> k 2h jsdkf", "user1");
+    t.is(tasks.length, 1);
+    let task = tasks[0];
+    t.is("kd83gh39", task.project);
+    t.is("<#kd83gh39>", task.projectMarkup);
+    t.is("user1", task.user);
+    t.is("jheh <#kd83gh39|schneesport> k 2h jsdkf", task.text);
+    t.deepEqual(task.duration, moment.duration("2:00"));
+});
+
+test("Dont process channels with special character, periods or spaces", t => {
+    let tasks = makeTasks("jheh <#kd8*3gh39> k 2h jsdkf", "user1");
+    t.is(tasks.length, 0);
+});
+
 test("Hash thats no channel", t => {
     let tasks = makeTasks("Worked on #thisproject for 5h", "user3");
     t.is(tasks.length, 0);
