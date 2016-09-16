@@ -68,6 +68,9 @@ sudo docker run --name chefbot -d --link redis-chefbot:redis -e "token=slack-tok
 # Backup
 sudo docker run --rm --volumes-from redis-chefbot -v $(pwd):/backup busybox tar cvf /backup/dump.tar /data
 
+# Copy to local machine
+gcloud compute copy-files demo:~/dump.tar .
+
 # Restore
 sudo docker run --rm --volumes-from redis-chefbot -v $(pwd):/backup busybox tar xvf /backup/dump.tar
 # Verify
