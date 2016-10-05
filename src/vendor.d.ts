@@ -15,6 +15,7 @@ interface BotOptions {
 
 interface ControllerOptions {
     token: string;
+    retry: number;
 }
 
 interface Conversation {

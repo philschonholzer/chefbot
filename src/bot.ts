@@ -29,7 +29,8 @@ let controller = Botkit.slackbot({
 });
 
 let bot = controller.spawn({
-    token: process.env.token
+    token: process.env.token,
+    retry: Infinity // https://github.com/howdyai/botkit/issues/276
 }).startRTM(function (err, bot) {
     if (err) {
         throw new Error(err);
