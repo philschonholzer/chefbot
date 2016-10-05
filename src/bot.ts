@@ -123,6 +123,11 @@ controller.hears(["übersicht", "total", "projekt", "tage", "arbeit"], "direct_m
     }));
 });
 
+controller.on("rtm_close", function () {
+    console.log("rtm_close");
+    process.exit(1);
+});
+
 /* Original reactions */
 
 controller.hears(["hello", "hi"], "direct_message,direct_mention,mention", function (bot, message) {

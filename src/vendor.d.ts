@@ -110,7 +110,7 @@ interface RedisStorage {
 }
 
 interface Controller {
-    on(channel: "channel_joined" | "direct_message", callback: (bot: Bot, message: Message) => void): void;
+    on(channel: "channel_joined" | "direct_message" | "rtm_close", callback: (bot: Bot, message: Message) => void): void;
     spawn(options?: ControllerOptions): Bot;
     hears(words: string[], whereMentioned: string, callback: (bot: Bot, message: Message) => void): void;
 }

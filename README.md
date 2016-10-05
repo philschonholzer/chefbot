@@ -58,8 +58,8 @@ docker-compose up -d --build
 docker build -t eu.gcr.io/demoinstances-1289/chefbot .
 gcloud compute ssh demo
 gcloud docker push eu.gcr.io/demoinstances-1289/chefbot
-sudo docker run --name redis-chefbot -v /data -d redis:alpine redis-server --save 900 1
-sudo docker run --name chefbot -d --link redis-chefbot:redis -e "token=slack-token" eu.gcr.io/demoinstances-1289/chefbot
+sudo docker run --name redis-chefbot -v /data -d --restart=always redis:alpine redis-server --save 900 1
+sudo docker run --name chefbot -d --restart=always --link redis-chefbot:redis -e "token=slack-token" eu.gcr.io/demoinstances-1289/chefbot
 ```
 
 #### Backup
