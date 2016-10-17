@@ -118,18 +118,3 @@ interface Controller {
 interface Botkit {
     slackbot(options?: BotOptions): Controller;
 }
-
-declare module "redis" {
-
-    export interface RedisClient extends NodeJS.EventEmitter {
-        setAsync(key:string, value:string): Promise<void>;
-        getAsync(key:string): Promise<string>;
-        saddAsync(args:any[]): Promise<boolean>;
-        saddAsync(...args:any[]): Promise<boolean>;
-        smembersAsync(args:any[]): Promise<string[]>;
-        smembersAsync(...args:any[]): Promise<string[]>;
-        incrbyAsync(args:any[]): Promise<number>;
-        incrbyAsync(...args:any[]): Promise<number>;
-    }
-
-}

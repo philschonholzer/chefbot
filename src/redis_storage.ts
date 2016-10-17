@@ -1,5 +1,5 @@
 import {Task} from "./types";
-import * as Redis from "ioredis";
+import * as IORedis from "ioredis";
 import * as Promise from "bluebird";
 import * as moment from "moment";
 
@@ -77,7 +77,7 @@ export default class Storage {
         this.config = config || {};
         this.config.keyPrefix = this.config.keyPrefix || "chefbot-store:";
 
-        this.redis = new Redis(this.config); // could pass specific redis config here
+        this.redis = new IORedis(this.config); // could pass specific redis config here
     }
 
     public get teams(): Store {
