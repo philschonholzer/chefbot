@@ -11,5 +11,4 @@ services:
     image: redis:alpine
     volumes:
       - "/data"
-    restart: always
     command: redis-server --save 900 1
