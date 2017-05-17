@@ -79,7 +79,7 @@ function askAllUsers(users: User[]) {
 
 function filterBotUsers(users: User[]) {
     return bot.api.users.listAsync({})
-        .then(res => res.members.filter(member => member.is_bot))
+        .then(res => res.members.filter(member => member.is_bot || member.is_restricted || member.is_ultra_restricted))
         .then(bots => users.filter(user => !bots.some(bot => bot.id === user.identification)));
 }
 

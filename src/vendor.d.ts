@@ -86,6 +86,8 @@ interface Channel {
 interface Member {
     id: string;
     is_bot: boolean;
+    is_restricted: boolean;
+    is_ultra_restricted: boolean;
 }
 
 interface Message {
